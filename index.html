@@ -276,27 +276,27 @@ const staff = [
   // G2 (7): Mar\u00eda Paz, Daniel, Ceci Flores, Ceci Pacheco, Tamara, Carolina, Vale
   // G3 (7): Paola, Karen, Ube, Alma, Francis, Raquel, Carmencita
   // Coloristas: siempre 2 AM + 2 PM. Daniel PM fijo. Los otros 3 rotan por ciclo de 3 semanas.
-  // Sem1: Marcela PM Lu-Ma, MPaz PM Mi-Ju, Paola PM Vi
-  // Sem2: MPaz PM Lu-Ma, Paola PM Mi-Ju, Marcela PM Vi
-  // Sem3: Paola PM Lu-Ma, Marcela PM Mi-Ju, MPaz PM Vi
-  // Cada una: 2+2+1 = 5 PM en 3 semanas (equitativo)
-  {name:'Marcela',area:'coloristas',areaLabel:'Coloristas',group:1,bases:[[B,B,A,A,A],[A,A,A,A,B],[A,A,B,B,A]],note:'PM rotativo'},
-  {name:'Mar\u00eda Paz',area:'coloristas',areaLabel:'Coloristas',group:2,bases:[[A,A,B,B,A],[B,B,A,A,A],[A,A,A,A,B]],note:'PM rotativo'},
-  {name:'Paola',area:'coloristas',areaLabel:'Coloristas',group:3,bases:[[A,A,A,A,B],[A,A,B,B,A],[B,B,A,A,A]],note:'PM rotativo'},
+  // Sem0: Marcela PM Ma-Mi, MPaz PM Ju-Vi, Paola PM Lu (dinámico)
+  // Sem1: MPaz PM Ma-Mi, Paola PM Ju-Vi, Marcela PM Lu (dinámico)
+  // Sem2: Paola PM Ma-Mi, Marcela PM Ju-Vi, MPaz PM Lu (dinámico)
+  // Cada una: 2+2+1 = 5 PM en 3 semanas (equitativo). Lu PM = quien tiene 0 PM esa semana.
+  {name:'Marcela',area:'coloristas',areaLabel:'Coloristas',group:1,bases:[[A,B,B,A,A],[A,A,A,A,A],[A,A,A,B,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Mar\u00eda Paz',area:'coloristas',areaLabel:'Coloristas',group:2,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,A,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Paola',area:'coloristas',areaLabel:'Coloristas',group:3,bases:[[A,A,A,A,A],[A,A,A,B,B],[A,B,B,A,A]],mondayPM:true,note:'PM rotativo'},
   {name:'Daniel',area:'coloristas',areaLabel:'Coloristas',group:2,base:[B,B,B,B,B],note:'PM fijo, entra 10:30'},
 
-  // Aplicadoras: 1 PM por día, rotan por ciclo de 3 semanas (igual que coloristas)
-  {name:'Paty',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,bases:[[B,B,A,A,A],[A,A,A,A,B],[A,A,B,B,A]],note:'PM rotativo'},
-  {name:'Ceci Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,bases:[[A,A,B,B,A],[B,B,A,A,A],[A,A,A,A,B]],note:'PM rotativo'},
-  {name:'Karen',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,bases:[[A,A,A,A,B],[A,A,B,B,A],[B,B,A,A,A]],note:'PM rotativo'},
+  // Aplicadoras: 1 PM por día, rotan por ciclo de 3 semanas. Lu PM dinámico.
+  {name:'Paty',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,bases:[[A,B,B,A,A],[A,A,A,A,A],[A,A,A,B,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Ceci Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,A,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Karen',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,bases:[[A,A,A,A,A],[A,A,A,B,B],[A,B,B,A,A]],mondayPM:true,note:'PM rotativo'},
 
   {name:'Ceci Pacheco',area:'corte',areaLabel:'Corte / Peinado',group:2,base:[B,B,A,A,A]},
   {name:'Ingrid',area:'corte',areaLabel:'Corte / Peinado',group:1,base:[A,A,B,B,B]},
 
-  // Ayudantes: 1 PM por día, rotan por ciclo de 3 semanas (igual que coloristas)
-  {name:'Isa San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[B,B,A,A,A],[A,A,A,A,B],[A,A,B,B,A]],note:'PM rotativo'},
-  {name:'Tamara',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,A,B,B,A],[B,B,A,A,A],[A,A,A,A,B]],note:'PM rotativo'},
-  {name:'Ube',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,A,B],[A,A,B,B,A],[B,B,A,A,A]],note:'PM rotativo'},
+  // Ayudantes: 1 PM por día, rotan por ciclo de 3 semanas. Lu PM dinámico.
+  {name:'Isa San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,B,B,A,A],[A,A,A,A,A],[A,A,A,B,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Tamara',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,A,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Ube',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,A,A],[A,A,A,B,B],[A,B,B,A,A]],mondayPM:true,note:'PM rotativo'},
 
   {name:'Carmencita',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,base:[A,B,A,B,B],note:'PM Ma-Ju-Vi'},
   {name:'Carolina',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:2,base:[A,B,B,A,A],note:'PM Ma-Mi'},
@@ -346,6 +346,50 @@ function weekCycle(date) {
   return ((diffWeeks % 3) + 3) % 3;
 }
 
+// For Monday PM: returns list of people who should do PM this Monday
+// Normally 1 person (the "empty week" person), but 2 if Daniel has libre
+function mondayPMList(area, date) {
+  const candidates = staff.filter(p => p.area === area && p.mondayPM);
+  const wc = weekCycle(date);
+  const lastSat = new Date(date);
+  lastSat.setDate(lastSat.getDate() - 2);
+  const libreGroup = satGroup(lastSat);
+
+  // Available = not on libre this Monday
+  const available = candidates.filter(p => p.group !== libreGroup);
+
+  // Check if the area's "fixed PM" person (like Daniel) has libre
+  const fixedPM = staff.find(p => p.area === area && p.base && p.base.every(s => s.dc === 'pm'));
+  const fixedHasLibre = fixedPM && fixedPM.group === libreGroup;
+
+  // How many rotative PM do we need on Monday?
+  const needed = fixedHasLibre ? 2 : 1;
+
+  // Prefer the "empty week" person first
+  const emptyPerson = available.find(p => {
+    const pattern = p.bases[wc];
+    return pattern[1].dc === 'am' && pattern[2].dc === 'am' && pattern[3].dc === 'am' && pattern[4].dc === 'am';
+  });
+
+  const result = [];
+  if (emptyPerson) result.push(emptyPerson.name);
+
+  if (result.length < needed) {
+    // Add more from available, prioritizing those with fewer PM this week
+    const remaining = available.filter(p => !result.includes(p.name));
+    remaining.sort((a, b) => {
+      const aPM = a.bases[wc].filter(s => s.dc === 'pm').length;
+      const bPM = b.bases[wc].filter(s => s.dc === 'pm').length;
+      return aPM - bPM;
+    });
+    for (const p of remaining) {
+      if (result.length >= needed) break;
+      result.push(p.name);
+    }
+  }
+  return result;
+}
+
 function getShiftForDate(person, date) {
   const dow = (date.getDay() + 6) % 7;
   if (dow === 6) return DOM;
@@ -360,7 +404,13 @@ function getShiftForDate(person, date) {
   }
   if (person.bases) {
     const wc = weekCycle(date);
-    return person.bases[wc][dow];
+    const shift = person.bases[wc][dow];
+    // Monday dynamic PM assignment
+    if (dow === 0 && person.mondayPM) {
+      const pmNames = mondayPMList(person.area, date);
+      return pmNames.includes(person.name) ? B : A;
+    }
+    return shift;
   }
   return person.base[dow];
 }
