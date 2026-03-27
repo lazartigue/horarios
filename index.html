@@ -679,24 +679,20 @@ function buildDayView() {
   }
   html += '</div>';
 
-  // Staff by area
+  // Staff by area (only working people)
   areas.forEach(a => {
     const group = byArea[a.key];
-    if (!group.people.length) return;
-    const present = group.people.filter(p => p.shift.h > 0).length;
-    const libre = group.people.filter(p => p.shift.dc === 'libre').length;
+    const working = group.people.filter(p => p.shift.h > 0);
+    if (!working.length) return;
 
     html += '<div class="dm-section">';
-    html += `<div class="dm-section-title"><span><span class="dm-count">${present}</span>${libre ? ` <span class="dm-count" style="background:var(--mid)">${libre} libre</span>` : ''} ${a.label}</span></div>`;
+    html += `<div class="dm-section-title"><span><span class="dm-count">${working.length}</span> ${a.label}</span></div>`;
 
-    group.people.forEach(pe => {
+    working.forEach(pe => {
       const s = pe.shift;
-      const bgCls = s.dc === 'am' ? 'am-bg' : s.dc === 'pm' ? 'pm-bg' : s.dc === 'sab' ? 'sab-bg' : 'libre-bg';
-      const pillLabel = s.dc === 'libre' ? 'LIBRE' : s.label;
-      const timeLabel = s.dc === 'libre' ? '' : s.time;
-      const hrsLabel = s.h > 0 ? `${s.h}h` : '';
-      const pDotColor = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : s.dc === 'sab' ? 'var(--sab)' : '';
-      const pDotHtml = pDotColor ? `<span class="dot" style="background:${pDotColor};width:6px;height:6px"></span>` : '';
+      const bgCls = s.dc === 'am' ? 'am-bg' : s.dc === 'pm' ? 'pm-bg' : 'sab-bg';
+      const pDotColor = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : 'var(--sab)';
+      const pDotHtml = `<span class="dot" style="background:${pDotColor};width:6px;height:6px"></span>`;
 
       html += `<div class="dm-person ${bgCls}">
         <div class="dm-person-info">
@@ -706,9 +702,9 @@ function buildDayView() {
           ${pe.note ? `<span class="dm-person-note">${pe.note}</span>` : ''}
         </div>
         <div class="dm-person-shift">
-          <span class="dm-shift-time">${timeLabel}</span>
-          <span class="dm-shift-pill ${s.dc === 'libre' ? 'libre' : s.dc}">${pDotHtml}${pillLabel}</span>
-          <span class="dm-shift-hrs">${hrsLabel}</span>
+          <span class="dm-shift-time">${s.time}</span>
+          <span class="dm-shift-pill ${s.dc}">${pDotHtml}${s.label}</span>
+          <span class="dm-shift-hrs">${s.h}h</span>
         </div>
       </div>`;
     });
