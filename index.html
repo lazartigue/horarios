@@ -983,19 +983,19 @@ function buildHoursView() {
   table.className = 'hrs-table';
   table.innerHTML = `<thead><tr>
     <th>Nombre</th><th>Grupo</th><th>\u00c1rea</th>
-    <th>Hrs Totales</th><th>D\u00edas Trabajados</th><th>S\u00e1bados</th><th>Libres</th><th>Hrs/Sem Prom</th>
+    <th>Hrs Totales</th><th>D\u00edas Trabajados</th><th>S\u00e1bados</th><th>Libres</th><th>Hrs/Sem Prom</th><th></th>
   </tr></thead>`;
 
   const tbody = document.createElement('tbody');
   let lastArea = '';
   let grandTotal = 0;
 
-  staff.forEach(p => {
+  staff.forEach((p, idx) => {
     if (p.area !== lastArea) {
       lastArea = p.area;
       const ar = document.createElement('tr');
       ar.className = 'area-row';
-      ar.innerHTML = `<td colspan="8">${p.areaLabel}</td>`;
+      ar.innerHTML = `<td colspan="9">${p.areaLabel}</td>`;
       tbody.appendChild(ar);
     }
 
@@ -1012,13 +1012,14 @@ function buildHoursView() {
       <td>${stats.days}</td>
       <td>${stats.sats}</td>
       <td>${stats.libres}</td>
-      <td style="font-weight:700">${avgWeek}h</td>`;
+      <td style="font-weight:700">${avgWeek}h</td>
+      <td><a href="#" class="hrs-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver horario</a></td>`;
     tbody.appendChild(tr);
   });
 
   // Total row
   const totalRow = document.createElement('tr');
-  totalRow.innerHTML = `<td colspan="3" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td><td style="font-weight:700">${grandTotal}h</td><td colspan="4"></td>`;
+  totalRow.innerHTML = `<td colspan="3" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td><td style="font-weight:700">${grandTotal}h</td><td colspan="5"></td>`;
   totalRow.style.borderTop = '2px solid var(--black)';
   tbody.appendChild(totalRow);
 
@@ -1041,6 +1042,21 @@ function buildHoursView() {
   document.getElementById('h-range').addEventListener('change', e => { hrsRange = e.target.value; buildHoursView(); });
   document.getElementById('h-prev').addEventListener('click', () => { hrsMonth--; if (hrsMonth < 0) { hrsMonth = 11; hrsYear--; } buildHoursView(); });
   document.getElementById('h-next').addEventListener('click', () => { hrsMonth++; if (hrsMonth > 11) { hrsMonth = 0; hrsYear++; } buildHoursView(); });
+
+  container.querySelectorAll('.hrs-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const idx = e.target.dataset.idx;
+      personSel = idx;
+      personArea = 'all';
+      buildPersonView();
+      document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      const personTab = document.querySelector('[data-view="person"]');
+      personTab.classList.add('active');
+      document.getElementById('view-person').classList.add('active');
+    });
+  });
 }
 buildHoursView();
 
