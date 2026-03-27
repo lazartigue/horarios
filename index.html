@@ -275,27 +275,28 @@ const staff = [
   // G1 (7): Marcela, Paty, Ingrid, Isa, Antonio, Pamela, Fran Brocco
   // G2 (7): Mar\u00eda Paz, Daniel, Ceci Flores, Ceci Pacheco, Tamara, Carolina, Vale
   // G3 (7): Paola, Karen, Ube, Alma, Francis, Raquel, Carmencita
-  // Coloristas: siempre 2 AM + 2 PM. Daniel PM fijo. Los otros 3 rotan.
-  // Lu: MPaz+Paola AM / Daniel+Marcela PM
-  // Ma: Marcela+Paola AM / Daniel+MPaz PM
-  // Mi: MPaz+Paola AM / Daniel+Marcela PM
-  // Ju: Marcela+MPaz AM / Daniel+Paola PM
-  // Vi: Marcela+Paola AM / Daniel+MPaz PM
-  {name:'Marcela',area:'coloristas',areaLabel:'Coloristas',group:1,base:[B,A,B,A,A],note:'PM Lun y Mi'},
-  {name:'Mar\u00eda Paz',area:'coloristas',areaLabel:'Coloristas',group:2,base:[A,B,A,A,B],note:'PM Mar y Vie'},
-  {name:'Paola',area:'coloristas',areaLabel:'Coloristas',group:3,base:[A,A,A,B,A],note:'PM Jue'},
+  // Coloristas: siempre 2 AM + 2 PM. Daniel PM fijo. Los otros 3 rotan por ciclo de 3 semanas.
+  // Sem1: Marcela PM Lu-Ma, MPaz PM Mi-Ju, Paola PM Vi
+  // Sem2: MPaz PM Lu-Ma, Paola PM Mi-Ju, Marcela PM Vi
+  // Sem3: Paola PM Lu-Ma, Marcela PM Mi-Ju, MPaz PM Vi
+  // Cada una: 2+2+1 = 5 PM en 3 semanas (equitativo)
+  {name:'Marcela',area:'coloristas',areaLabel:'Coloristas',group:1,bases:[[B,B,A,A,A],[A,A,A,A,B],[A,A,B,B,A]],note:'PM rotativo'},
+  {name:'Mar\u00eda Paz',area:'coloristas',areaLabel:'Coloristas',group:2,bases:[[A,A,B,B,A],[B,B,A,A,A],[A,A,A,A,B]],note:'PM rotativo'},
+  {name:'Paola',area:'coloristas',areaLabel:'Coloristas',group:3,bases:[[A,A,A,A,B],[A,A,B,B,A],[B,B,A,A,A]],note:'PM rotativo'},
   {name:'Daniel',area:'coloristas',areaLabel:'Coloristas',group:2,base:[B,B,B,B,B],note:'PM fijo, entra 10:30'},
 
-  {name:'Paty',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,base:[A,A,B,A,A],note:'PM Mi'},
-  {name:'Ceci Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,base:[A,B,A,A,B],note:'PM Ma-Vi'},
-  {name:'Karen',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,base:[B,A,A,B,A],note:'PM Lu-Ju'},
+  // Aplicadoras: 1 PM por día, rotan por ciclo de 3 semanas (igual que coloristas)
+  {name:'Paty',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,bases:[[B,B,A,A,A],[A,A,A,A,B],[A,A,B,B,A]],note:'PM rotativo'},
+  {name:'Ceci Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,bases:[[A,A,B,B,A],[B,B,A,A,A],[A,A,A,A,B]],note:'PM rotativo'},
+  {name:'Karen',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,bases:[[A,A,A,A,B],[A,A,B,B,A],[B,B,A,A,A]],note:'PM rotativo'},
 
   {name:'Ceci Pacheco',area:'corte',areaLabel:'Corte / Peinado',group:2,base:[B,B,A,A,A]},
   {name:'Ingrid',area:'corte',areaLabel:'Corte / Peinado',group:1,base:[A,A,B,B,B]},
 
-  {name:'Isa San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,base:[A,A,B,A,A],note:'PM Mi'},
-  {name:'Tamara',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,base:[A,B,A,A,B],note:'PM Ma-Vi'},
-  {name:'Ube',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,base:[B,A,A,B,A],note:'PM Lu-Ju'},
+  // Ayudantes: 1 PM por día, rotan por ciclo de 3 semanas (igual que coloristas)
+  {name:'Isa San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[B,B,A,A,A],[A,A,A,A,B],[A,A,B,B,A]],note:'PM rotativo'},
+  {name:'Tamara',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,A,B,B,A],[B,B,A,A,A],[A,A,A,A,B]],note:'PM rotativo'},
+  {name:'Ube',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,A,B],[A,A,B,B,A],[B,B,A,A,A]],note:'PM rotativo'},
 
   {name:'Carmencita',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,base:[A,B,A,B,B],note:'PM Ma-Ju-Vi'},
   {name:'Carolina',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:2,base:[A,B,B,A,A],note:'PM Ma-Mi'},
@@ -337,6 +338,14 @@ function satGroup(date) {
   return mod + 1;
 }
 
+// Cycle week index (0,1,2) based on ISO weeks from reference Monday
+function weekCycle(date) {
+  const refMon = new Date(2025, 3, 7); // Mon April 7 2025 (first Mon of schedule)
+  const mon = getMondayOfWeek(date);
+  const diffWeeks = Math.round((mon.getTime() - refMon.getTime()) / (7 * 86400000));
+  return ((diffWeeks % 3) + 3) % 3;
+}
+
 function getShiftForDate(person, date) {
   const dow = (date.getDay() + 6) % 7;
   if (dow === 6) return DOM;
@@ -348,6 +357,10 @@ function getShiftForDate(person, date) {
     const lastSat = new Date(date);
     lastSat.setDate(lastSat.getDate() - 2);
     if (person.group === satGroup(lastSat)) return LIB;
+  }
+  if (person.bases) {
+    const wc = weekCycle(date);
+    return person.bases[wc][dow];
   }
   return person.base[dow];
 }
