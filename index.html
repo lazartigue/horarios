@@ -54,6 +54,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
 .cal-cell.empty{background:var(--bg)}
 .cal-cell.dom{background:var(--bg);opacity:.4}
 .cal-cell .day-num{font-size:11px;font-weight:700;color:var(--mid);margin-bottom:3px}
+.cal-cell .day-present{position:absolute;top:4px;right:5px;font-size:9px;font-weight:700;color:var(--light);line-height:1}
 .cal-cell.today .day-num{background:var(--black);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .cal-cell .shifts{display:flex;flex-direction:column;gap:1px}
 .cal-pill{font-size:8px;padding:2px 4px;border-radius:3px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;cursor:default;display:flex;align-items:center;gap:3px}
@@ -533,6 +534,11 @@ function buildMonthView() {
     cell.appendChild(numEl);
 
     if (!isSun) {
+      const presentCount = staff.filter(p => { const s = getShiftForDate(p, date); return s.dc !== 'dom' && s.dc !== 'lib'; }).length;
+      const badge = document.createElement('div');
+      badge.className = 'day-present';
+      badge.textContent = presentCount;
+      cell.appendChild(badge);
       const shifts = document.createElement('div');
       shifts.className = 'shifts';
 
@@ -761,12 +767,17 @@ function buildWeekView() {
     <select id="w-person"><option value="all">Todos</option>${staff.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('')}</select>
   </div>`;
 
-  ctrl += `<div class="sum-box"><h3><svg class="icon icon-sm"><use href="#i-info"/></svg> G${satGrp} trabaja S\u00e1b ${satDate.getDate()}/${satDate.getMonth()+1} / Lunes libre pr\u00f3xima semana</h3>
+  const weekPresent = dates.slice(0,6).map(d => staff.filter(p => { const s = getShiftForDate(p, d); return s.dc !== 'dom' && s.dc !== 'lib'; }).length);
+  const wpMin = Math.min(...weekPresent);
+  const wpMax = Math.max(...weekPresent);
+  const wpLabel = wpMin === wpMax ? `${wpMin}` : `${wpMin}–${wpMax}`;
+
+  ctrl += `<div class="sum-box"><h3><svg class="icon icon-sm"><use href="#i-info"/></svg> G${satGrp} trabaja Sáb ${satDate.getDate()}/${satDate.getMonth()+1} / Lunes libre próxima semana</h3>
     <div class="sum-grid">
+      <div class="sum-item"><div class="sv">${wpLabel}</div><div class="sl">Presentes/día</div></div>
       <div class="sum-item"><div class="sv">9.5h</div><div class="sl">Turno L-V</div></div>
-      <div class="sum-item"><div class="sv">5h</div><div class="sl">S\u00e1b (G${satGrp})</div></div>
+      <div class="sum-item"><div class="sv">5h</div><div class="sl">Sáb (G${satGrp})</div></div>
       <div class="sum-item"><div class="sv">G${satGrp}</div><div class="sl">Lu libre sig.</div></div>
-      <div class="sum-item"><div class="sv">3</div><div class="sl">Grupos</div></div>
     </div></div>`;
 
   container.innerHTML = ctrl;
