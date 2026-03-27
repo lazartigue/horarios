@@ -216,11 +216,6 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
     <h1>Lazartigue &mdash; Horarios V5</h1>
     <div class="sub">Proyecci&oacute;n Anual &middot; Turnos 9.5h &middot; Rotaci&oacute;n G1/G2/G3 cada 3 semanas &middot; 46h/sem promedio</div>
   </div>
-  <div class="badges">
-    <span class="badge"><span class="dot" style="background:var(--am)"></span> AM 09:00 &ndash; 18:30</span>
-    <span class="badge"><span class="dot" style="background:var(--pm)"></span> PM 10:30 &ndash; 20:00</span>
-    <span class="badge"><span class="dot" style="background:var(--sab)"></span> S&aacute;b 09:00 &ndash; 14:00</span>
-  </div>
 </div>
 
 <div class="nav" id="nav"></div>
@@ -270,6 +265,8 @@ const B   = {time:'10:30-20:00',label:'PM',cls:'turno-b',dc:'pm',h:9.5};
 const SAB = {time:'09:00-14:00',label:'S\u00e1b',cls:'turno-sab',dc:'sab',h:5};
 const LIB = {time:'LIBRE',label:'Libre',cls:'turno-libre',dc:'libre',h:0};
 const DOM = {time:'DOMINGO',label:'Dom',cls:'turno-libre',dc:'dom',h:0};
+
+const LEGEND_HTML = `<div class="badges" style="margin:8px 0 4px"><span class="badge"><span class="dot" style="background:var(--am)"></span> AM 09:00 – 18:30</span><span class="badge"><span class="dot" style="background:var(--pm)"></span> PM 10:30 – 20:00</span><span class="badge"><span class="dot" style="background:var(--sab)"></span> Sáb 09:00 – 14:00</span></div>`;
 
 // ============================================================
 // STAFF
@@ -491,7 +488,7 @@ function buildMonthView() {
     <label>Persona</label>
     <select id="m-person"><option value="all">Todo el equipo</option>${staff.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('')}</select>
   </div>`;
-  container.innerHTML = ctrl;
+  container.innerHTML = ctrl + LEGEND_HTML;
 
   const grid = document.createElement('div');
   grid.className = 'cal-grid';
@@ -633,7 +630,7 @@ function buildDayView() {
     ctrl += `<div style="font-size:11px;color:var(--mid);margin-bottom:12px">${subParts.slice(1).join(' \u2014 ')}</div>`;
   }
 
-  container.innerHTML = ctrl;
+  container.innerHTML = ctrl + LEGEND_HTML;
 
   const content = document.createElement('div');
 
@@ -780,7 +777,7 @@ function buildWeekView() {
       <div class="sum-item"><div class="sv">G${satGrp}</div><div class="sl">Lu libre sig.</div></div>
     </div></div>`;
 
-  container.innerHTML = ctrl;
+  container.innerHTML = ctrl + LEGEND_HTML;
 
   const table = document.createElement('table');
   table.className = 'week-table';
@@ -869,7 +866,7 @@ function buildPersonView() {
     <span id="p-mlabel" style="font-weight:700;font-size:13px;min-width:130px;text-align:center">${MONTHS_NAMES[personMonth]} ${personYear}</span>
     <button class="btn" id="p-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
   </div>`;
-  container.innerHTML = ctrl;
+  container.innerHTML = ctrl + LEGEND_HTML;
 
   let filtered = staff;
   if (personSel !== 'all') filtered = [staff[parseInt(personSel)]];
