@@ -534,7 +534,7 @@ function buildMonthView() {
     cell.appendChild(numEl);
 
     if (!isSun) {
-      const presentCount = staff.filter(p => { const s = getShiftForDate(p, date); return s.dc !== 'dom' && s.dc !== 'lib'; }).length;
+      const presentCount = staff.filter(p => { const s = getShiftForDate(p, date); return s.dc !== 'dom' && s.dc !== 'libre'; }).length;
       const badge = document.createElement('div');
       badge.className = 'day-present';
       badge.textContent = `Dot: ${presentCount}`;
@@ -767,7 +767,7 @@ function buildWeekView() {
     <select id="w-person"><option value="all">Todos</option>${staff.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('')}</select>
   </div>`;
 
-  const weekPresent = dates.slice(0,6).map(d => staff.filter(p => { const s = getShiftForDate(p, d); return s.dc !== 'dom' && s.dc !== 'lib'; }).length);
+  const weekPresent = dates.slice(0,6).map(d => staff.filter(p => { const s = getShiftForDate(p, d); return s.dc !== 'dom' && s.dc !== 'libre'; }).length);
   const wpMin = Math.min(...weekPresent);
   const wpMax = Math.max(...weekPresent);
   const wpLabel = wpMin === wpMax ? `${wpMin}` : `${wpMin}–${wpMax}`;
