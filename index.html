@@ -226,6 +226,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
 
 <div class="main">
   <div id="view-month" class="view active"></div>
+  <div id="view-day" class="view"></div>
   <div id="view-week" class="view"></div>
   <div id="view-person" class="view"></div>
   <div id="view-hours" class="view"></div>
@@ -447,6 +448,7 @@ function computeHoursInRange(person, startDate, endDate) {
 const navEl = document.getElementById('nav');
 const tabs = [
   {id:'month',label:'Mes',icon:'i-calendar'},
+  {id:'day',label:'D\u00eda',icon:'i-clock'},
   {id:'week',label:'Semana',icon:'i-week'},
   {id:'person',label:'Persona',icon:'i-users'},
   {id:'hours',label:'Horas Total',icon:'i-bar-chart'},
@@ -584,6 +586,153 @@ function buildMonthView() {
   document.getElementById('m-person').value = monthSearch || 'all';
 }
 buildMonthView();
+
+// ============================================================
+// DAY VIEW
+// ============================================================
+let dayDate = new Date();
+// Skip to valid day (not Sunday)
+if (dayDate.getDay() === 0) dayDate.setDate(dayDate.getDate() + 1);
+
+function buildDayView() {
+  const container = document.getElementById('view-day');
+  container.innerHTML = '';
+
+  const dow = (dayDate.getDay() + 6) % 7;
+  if (dow === 6) { dayDate.setDate(dayDate.getDate() + 1); buildDayView(); return; }
+
+  const isPeak = PEAK_DOW.includes(dow);
+  const isSab = dow === 5;
+  const dayLabel = DAYS_FULL[dow];
+  const dateStr = `${dayDate.getDate()} de ${MONTHS_NAMES[dayDate.getMonth()]} ${dayDate.getFullYear()}`;
+
+  let subParts = [dateStr];
+  if (isPeak) subParts.push('DIA PEAK');
+  if (isSab) {
+    subParts.push(`S\u00e1bado 09:00-14:00 \u2014 Trabaja G${satGroup(dayDate)}`);
+  } else if (dow === 0) {
+    const lastSat = new Date(dayDate); lastSat.setDate(lastSat.getDate() - 2);
+    subParts.push(`G${satGroup(lastSat)} tiene Lunes libre`);
+  }
+
+  let ctrl = `<div class="ctrl">
+    <label>D\u00eda</label>
+    <button class="btn" id="d-prev"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+    <span style="font-weight:700;font-size:13px;min-width:220px;text-align:center">${dayLabel} ${dayDate.getDate()} ${MONTHS_NAMES[dayDate.getMonth()]} ${dayDate.getFullYear()}</span>
+    <button class="btn" id="d-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+    <button class="btn-p btn" id="d-today">Hoy</button>
+  </div>`;
+
+  if (isPeak || isSab || dow === 0) {
+    ctrl += `<div style="font-size:11px;color:var(--mid);margin-bottom:12px">${subParts.slice(1).join(' \u2014 ')}</div>`;
+  }
+
+  container.innerHTML = ctrl;
+
+  const content = document.createElement('div');
+
+  const byArea = {};
+  areas.forEach(a => { byArea[a.key] = { label: a.label, people: [] }; });
+  let totalAM = 0, totalPM = 0, totalSab = 0, totalLibre = 0, totalHrs = 0, totalPresent = 0;
+
+  staff.forEach(p => {
+    const s = getShiftForDate(p, dayDate);
+    if (s.dc === 'dom') return;
+    byArea[p.area].people.push({ name: p.name, group: p.group, note: p.note || '', shift: s });
+    if (s.dc === 'am') totalAM++;
+    else if (s.dc === 'pm') totalPM++;
+    else if (s.dc === 'sab') totalSab++;
+    else if (s.dc === 'libre') totalLibre++;
+    totalHrs += s.h;
+    if (s.h > 0) totalPresent++;
+  });
+
+  let html = '';
+
+  // Stats
+  html += '<div class="dm-stats">';
+  html += `<div class="dm-stat"><div class="ds-v">${totalPresent}</div><div class="ds-l">Presentes</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${isSab ? totalSab + totalAM : totalAM}</div><div class="ds-l">${isSab ? 'Presentes' : 'Turno AM'}</div></div>`;
+  if (!isSab) html += `<div class="dm-stat"><div class="ds-v">${totalPM}</div><div class="ds-l">Turno PM</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalLibre}</div><div class="ds-l">Libres</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalHrs}h</div><div class="ds-l">Hrs totales</div></div>`;
+  html += '</div>';
+
+  // Coverage
+  html += '<div class="dm-coverage"><h4><svg class="icon icon-sm"><use href="#i-shield"/></svg> Cobertura y Validaciones</h4>';
+  const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
+  const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colAM.length>=2?'ok':'warn'}">${colAM.length}</span></div>`;
+  const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplAM.length>=Math.ceil(colAM.length/2)?'ok':'warn'}">${aplAM.length}</span></div>`;
+  const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
+  const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
+  if (!isSab) {
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
+    const recPM = byArea['recepcion'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n cierre</div><span class="dm-cov-count ${recPM.length>=1?'ok':'warn'}">${recPM.length}</span></div>`;
+    const lavPM = byArea['lavapelo'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo cierre</div><span class="dm-cov-count ${lavPM.length>=1?'ok':'warn'}">${lavPM.length}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Solapamiento 10:30\u201318:30</div><span class="dm-cov-count ok">${totalPresent}</span></div>`;
+  }
+  html += '</div>';
+
+  // Staff by area
+  areas.forEach(a => {
+    const group = byArea[a.key];
+    if (!group.people.length) return;
+    const present = group.people.filter(p => p.shift.h > 0).length;
+    const libre = group.people.filter(p => p.shift.dc === 'libre').length;
+
+    html += '<div class="dm-section">';
+    html += `<div class="dm-section-title"><span><span class="dm-count">${present}</span>${libre ? ` <span class="dm-count" style="background:var(--mid)">${libre} libre</span>` : ''} ${a.label}</span></div>`;
+
+    group.people.forEach(pe => {
+      const s = pe.shift;
+      const bgCls = s.dc === 'am' ? 'am-bg' : s.dc === 'pm' ? 'pm-bg' : s.dc === 'sab' ? 'sab-bg' : 'libre-bg';
+      const pillLabel = s.dc === 'libre' ? 'LIBRE' : s.label;
+      const timeLabel = s.dc === 'libre' ? '' : s.time;
+      const hrsLabel = s.h > 0 ? `${s.h}h` : '';
+      const pDotColor = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : s.dc === 'sab' ? 'var(--sab)' : '';
+      const pDotHtml = pDotColor ? `<span class="dot" style="background:${pDotColor};width:6px;height:6px"></span>` : '';
+
+      html += `<div class="dm-person ${bgCls}">
+        <div class="dm-person-info">
+          ${pDotHtml}
+          <span class="dm-person-name">${pe.name}</span>
+          <span class="dm-person-group">G${pe.group}</span>
+          ${pe.note ? `<span class="dm-person-note">${pe.note}</span>` : ''}
+        </div>
+        <div class="dm-person-shift">
+          <span class="dm-shift-time">${timeLabel}</span>
+          <span class="dm-shift-pill ${s.dc === 'libre' ? 'libre' : s.dc}">${pDotHtml}${pillLabel}</span>
+          <span class="dm-shift-hrs">${hrsLabel}</span>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  content.innerHTML = html;
+  container.appendChild(content);
+
+  // Navigation
+  function stepDay(delta) {
+    dayDate.setDate(dayDate.getDate() + delta);
+    if (dayDate.getDay() === 0) dayDate.setDate(dayDate.getDate() + delta);
+    buildDayView();
+  }
+  document.getElementById('d-prev').addEventListener('click', () => stepDay(-1));
+  document.getElementById('d-next').addEventListener('click', () => stepDay(1));
+  document.getElementById('d-today').addEventListener('click', () => {
+    dayDate = new Date();
+    if (dayDate.getDay() === 0) dayDate.setDate(dayDate.getDate() + 1);
+    buildDayView();
+  });
+}
+buildDayView();
 
 // ============================================================
 // WEEK VIEW
