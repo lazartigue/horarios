@@ -230,6 +230,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
   <div id="view-week" class="view"></div>
   <div id="view-person" class="view"></div>
   <div id="view-hours" class="view"></div>
+  <div id="view-team" class="view"></div>
   <div id="view-rules" class="view"></div>
 </div>
 
@@ -273,53 +274,44 @@ const DOM = {time:'DOMINGO',label:'Dom',cls:'turno-libre',dc:'dom',h:0};
 // STAFF
 // ============================================================
 const staff = [
-  // G1 (7): Marcela, Paty, Ingrid, Isa, Antonio, Pamela, Fran Brocco
+  // G1 (8): Marcela, Paty, Ingrid, Isa, Antonio, Pamela, Fran Brocco, Carol
   // G2 (7): Mar\u00eda Paz, Daniel, Ceci Flores, Ceci Pacheco, Tamara, Carolina, Vale
   // G3 (7): Paola, Karen, Ube, Alma, Francis, Raquel, Carmencita
-  // Coloristas: Daniel PM fijo. Las otras 3 rotan 1 PM/día Ma-Vi + Lu dinámico.
-  // Sem0: Marcela PM Ma+Vi, MPaz PM Mi, Paola PM Ju
-  // Sem1: MPaz PM Ma+Vi, Paola PM Mi, Marcela PM Ju
-  // Sem2: Paola PM Ma+Vi, Marcela PM Mi, MPaz PM Ju
-  // Cada una: 4 PM Ma-Vi en 3 sem (equitativo) + Lu rotativo
-  {name:'Marcela',area:'coloristas',areaLabel:'Coloristas',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Mar\u00eda Paz',area:'coloristas',areaLabel:'Coloristas',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Paola',area:'coloristas',areaLabel:'Coloristas',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
-  {name:'Daniel',area:'coloristas',areaLabel:'Coloristas',group:2,base:[B,B,B,B,B],note:'PM fijo, entra 10:30'},
+  // Coloristas: Daniel PM fijo. Las otras 3 rotan 1 PM/d\u00eda Ma-Vi + Lu din\u00e1mico.
+  {name:'Marcela Carrion',area:'coloristas',areaLabel:'Coloristas',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Mar\u00eda Paz Hodges',area:'coloristas',areaLabel:'Coloristas',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Paola Mella',area:'coloristas',areaLabel:'Coloristas',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Daniel Olave',area:'coloristas',areaLabel:'Coloristas',group:2,base:[B,B,B,B,B],note:'PM fijo, entra 10:30'},
 
-  // Aplicadoras: 1 PM por día Ma-Vi + Lu dinámico. Mismo patrón que coloristas.
-  {name:'Paty',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Ceci Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Karen',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
+  // Aplicadoras: 1 PM por d\u00eda Ma-Vi + Lu din\u00e1mico.
+  {name:'Patricia Toledo',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Cecilia Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Karen Leiva',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
 
-  // Corte: 1 PM por día. 2 personas rotan Ma-Vi en ciclo de 3 sem, Lu dinámico.
-  // Sem0: Ceci PM Ma-Mi, Ingrid PM Ju-Vi (2-2)
-  // Sem1: Ingrid PM Ma-Mi, Ceci PM Ju-Vi (2-2)
-  // Sem2: Ceci PM Ma-Ju, Ingrid PM Mi-Vi (2-2)
-  {name:'Ceci Pacheco',area:'corte',areaLabel:'Corte / Peinado',group:2,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Ingrid',area:'corte',areaLabel:'Corte / Peinado',group:1,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
+  // Corte: 1 PM por d\u00eda. 2 personas rotan Ma-Vi en ciclo de 3 sem, Lu din\u00e1mico.
+  {name:'Lorena Cecilia Pacheco',area:'corte',areaLabel:'Corte / Peinado',group:2,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Ingrid Higuera',area:'corte',areaLabel:'Corte / Peinado',group:1,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
 
-  // Ayudantes: 1 PM por día Ma-Vi + Lu dinámico. Mismo patrón que coloristas.
-  {name:'Isa San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Tamara',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Ube',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
+  // Ayudantes: 4 personas, 1 PM por d\u00eda Ma-Vi + Lu din\u00e1mico.
+  // Sem0: Isa PM Ma, Tamara PM Mi, Ube PM Ju, Carol PM Vi
+  // Sem1: Tamara PM Ma, Ube PM Mi, Carol PM Ju, Isa PM Vi
+  // Sem2: Ube PM Ma, Carol PM Mi, Isa PM Ju, Tamara PM Vi
+  {name:'Isabel San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,B,A,A,A],[A,A,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Tamara Bustos',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,A,B,A,A],[A,B,A,A,A],[A,A,A,A,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Uberlinda Urra',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Carol Silva',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,A,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
 
-  // Lavapelo: 2 PM por día. 4 personas rotan Ma-Vi en ciclo de 3 sem, Lu dinámico (2 PM).
-  // Sem0: Carmencita+Francis PM Ma-Mi, Alma+Carolina PM Ju-Vi
-  // Sem1: Alma+Carolina PM Ma-Mi, Carmencita+Francis PM Ju-Vi
-  // Sem2: Carmencita+Alma PM Ma-Ju, Francis+Carolina PM Mi-Vi
-  {name:'Carmencita',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Carolina',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:2,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
-  {name:'Alma',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  // Lavapelo: 2 PM por d\u00eda. 4 personas rotan Ma-Vi en ciclo de 3 sem, Lu din\u00e1mico (2 PM).
+  {name:'Eugenia del Carmen Uribe',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Carolina Madariaga',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:2,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Alma Ar\u00e9valo',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
   {name:'Francis',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
 
   {name:'Antonio San Mart\u00edn',area:'recepcion',areaLabel:'Recepci\u00f3n',group:1,base:[A,A,A,A,A],note:'Siempre 09:00, sin Lu libre'},
-  // Recepción rotativa: Vale y Raquel rotan Ma-Vi en ciclo de 3 sem, Lu dinámico.
-  // Sem0: Vale PM Ma-Mi, Raquel PM Ju-Vi
-  // Sem1: Raquel PM Ma-Mi, Vale PM Ju-Vi
-  // Sem2: Vale PM Ma-Ju, Raquel PM Mi-Vi
-  {name:'Vale',area:'recepcion',areaLabel:'Recepci\u00f3n',group:2,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Raquel',area:'recepcion',areaLabel:'Recepci\u00f3n',group:3,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
-  {name:'Fran Brocco',area:'recepcion',areaLabel:'Recepci\u00f3n',group:1,base:[B,B,B,B,B],note:'Art.22 PM fijo'},
+  // Recepci\u00f3n rotativa: Vale y Raquel rotan Ma-Vi en ciclo de 3 sem, Lu din\u00e1mico.
+  {name:'Valeria Otegui',area:'recepcion',areaLabel:'Recepci\u00f3n',group:2,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Raquel Hasson',area:'recepcion',areaLabel:'Recepci\u00f3n',group:3,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Francisca Brocco',area:'recepcion',areaLabel:'Recepci\u00f3n',group:1,base:[B,B,B,B,B],note:'Art.22 PM fijo'},
 
   {name:'Pamela Hern\u00e1ndez',area:'backoffice',areaLabel:'Back Office',group:1,base:[A,A,A,A,A]},
 ];
@@ -452,6 +444,7 @@ const tabs = [
   {id:'day',label:'D\u00eda',icon:'i-clock'},
   {id:'person',label:'Persona',icon:'i-users'},
   {id:'hours',label:'Horas Total',icon:'i-bar-chart'},
+  {id:'team',label:'Equipo',icon:'i-users'},
   {id:'rules',label:'Reglas',icon:'i-shield'},
 ];
 tabs.forEach((t,i) => {
@@ -1045,6 +1038,51 @@ function buildHoursView() {
 buildHoursView();
 
 // ============================================================
+// TEAM VIEW
+// ============================================================
+function buildTeamView() {
+  const container = document.getElementById('view-team');
+  let html = '<h3 style="margin-bottom:16px;font-size:15px;font-weight:700">Equipo Lazartigue</h3>';
+
+  html += '<table class="week-table"><thead><tr><th>Nombre completo</th><th>\u00c1rea</th><th>Grupo</th><th>Nota</th><th>Horario</th></tr></thead><tbody>';
+
+  let lastArea = '';
+  staff.forEach((p, idx) => {
+    if (p.area !== lastArea) {
+      lastArea = p.area;
+      html += `<tr class="area-row"><td colspan="5">${p.areaLabel}</td></tr>`;
+    }
+    html += `<tr>`;
+    html += `<td style="font-weight:600">${p.name}</td>`;
+    html += `<td>${p.areaLabel}</td>`;
+    html += `<td>G${p.group}</td>`;
+    html += `<td style="font-size:11px;color:var(--mid)">${p.note || ''}</td>`;
+    html += `<td><a href="#" class="team-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver horario</a></td>`;
+    html += `</tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('.team-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const idx = e.target.dataset.idx;
+      personSel = idx;
+      personArea = 'all';
+      buildPersonView();
+      // Switch to person tab
+      document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      const personTab = document.querySelector('[data-view="person"]');
+      personTab.classList.add('active');
+      document.getElementById('view-person').classList.add('active');
+    });
+  });
+}
+buildTeamView();
+
+// ============================================================
 // RULES VIEW
 // ============================================================
 (function buildRulesView() {
@@ -1074,9 +1112,9 @@ buildHoursView();
     {t:'Lunes y Martes flojos',d:'Dotaci\u00f3n m\u00ednima: 2 col AM + 2 aplic AM + 2 ayud AM. PM cubre solapamiento y cierre.',ok:true},
     {t:'Daniel entra 10:30',d:'PM est\u00e1ndar 10:30\u201320:00 (9.5h). Horario uniforme con el resto del turno PM.',ok:true},
     {t:'Antonio siempre 09:00, sin lunes libre',d:'Turno AM fijo todos los d\u00edas incluido s\u00e1bados de su grupo (G1). Nunca tiene lunes libre. Horas levemente mayores (~49h/sem).',ok:true},
-    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM (rotan Karen/Ceci F./Paty) + 1 corte PM (rotan Ceci P./Ingrid) + 1 ayudante PM (rotan Ube/Tamara/Isa) + 2 lavapelo PM (rotan entre las 4) + 2 recepci\u00f3n PM (Fran fijo + rotan Vale/Raquel). Nadie cierra todos los d\u00edas.',ok:true},
+    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM (rotan Patricia/Cecilia F./Karen) + 1 corte PM (rotan L. Cecilia P./Ingrid) + 1 ayudante PM (rotan Isabel/Tamara/Uberlinda/Carol) + 2 lavapelo PM (rotan entre las 4) + 2 recepci\u00f3n PM (Francisca fija + rotan Valeria/Raquel). Nadie cierra todos los d\u00edas.',ok:true},
     {t:'S\u00e1bado 09:00-14:00',d:'Solo 1 grupo trabaja (7 personas). Los otros 2 grupos descansan. Rotaci\u00f3n de 3 semanas garantiza equidad.',ok:true},
-    {t:'Grupos (7-7-7)',d:'G1: Marcela, Paty, Ingrid, Isa, Antonio, Pamela, Fran Brocco. G2: Mar\u00eda Paz, Daniel, Ceci Flores, Ceci Pacheco, Tamara, Carolina, Vale. G3: Paola, Karen, Ube, Alma, Francis, Raquel, Carmencita.',ok:true},
+    {t:'Grupos (8-7-7)',d:'G1: Marcela, Patricia, Ingrid, Isabel, Antonio, Pamela, Francisca B., Carol. G2: Mar\u00eda Paz, Daniel, Cecilia F., L. Cecilia P., Tamara, Carolina, Valeria. G3: Paola, Karen, Uberlinda, Alma, Francis, Raquel, Carmencita.',ok:true},
     {t:'Carol en licencia',d:'Falta 1 ayudante para ratio 1:1 en peak. Al retornar se asigna a G1, G2 o G3 seg\u00fan balance. Temporal.',ok:false},
   ];
 
