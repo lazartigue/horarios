@@ -74,7 +74,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
 .week-table tr:hover td{background:var(--bg)}
 .week-table td:first-child{text-align:left;font-weight:600;padding-left:14px;white-space:nowrap}
 .week-table td:last-child{font-weight:700;color:var(--black)}
-.area-row td{background:#d5d5d5!important;font-weight:700!important;color:var(--black)!important;font-size:10px!important;text-transform:uppercase;letter-spacing:.8px;padding:10px 14px!important;text-align:left!important}
+.area-row td{background:var(--bg)!important;font-weight:700!important;color:var(--black)!important;font-size:10px!important;text-transform:uppercase;letter-spacing:.8px;padding:10px 14px!important;text-align:left!important;border-bottom:1px solid var(--border)!important}
 .turno{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;min-width:95px}
 .turno-a{color:var(--dark)}
 .turno-b{color:var(--dark)}
@@ -764,18 +764,30 @@ function buildWeekView() {
     <select id="w-person"><option value="all">Todos</option>${staff.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('')}</select>
   </div>`;
 
-  const weekPresent = dates.slice(0,6).map(d => staff.filter(p => { const s = getShiftForDate(p, d); return s.dc !== 'dom' && s.dc !== 'libre'; }).length);
-  const wpMin = Math.min(...weekPresent);
-  const wpMax = Math.max(...weekPresent);
-  const wpLabel = wpMin === wpMax ? `${wpMin}` : `${wpMin}–${wpMax}`;
+  // Week stats (like day view dm-stats)
+  let wTotalAM=0, wTotalPM=0, wTotalLibre=0, wTotalHrs=0, wTotalPresent=0;
+  const wByArea = {};
+  areas.forEach(a => { wByArea[a.key] = 0; });
+  dates.slice(0,6).forEach(d => {
+    staff.forEach(p => {
+      const s = getShiftForDate(p, d);
+      if (s.dc === 'dom') return;
+      if (s.dc === 'am' || s.dc === 'sab') wTotalAM++;
+      if (s.dc === 'pm') wTotalPM++;
+      if (s.dc === 'libre') wTotalLibre++;
+      wTotalHrs += s.h;
+      if (s.h > 0) { wTotalPresent++; wByArea[p.area]++; }
+    });
+  });
 
-  ctrl += `<div class="sum-box"><h3><svg class="icon icon-sm"><use href="#i-info"/></svg> G${satGrp} trabaja Sáb ${satDate.getDate()}/${satDate.getMonth()+1} / Lunes libre próxima semana</h3>
-    <div class="sum-grid">
-      <div class="sum-item"><div class="sv">${wpLabel}</div><div class="sl">Presentes/día</div></div>
-      <div class="sum-item"><div class="sv">9.5h</div><div class="sl">Turno L-V</div></div>
-      <div class="sum-item"><div class="sv">5h</div><div class="sl">Sáb (G${satGrp})</div></div>
-      <div class="sum-item"><div class="sv">G${satGrp}</div><div class="sl">Lu libre sig.</div></div>
-    </div></div>`;
+  ctrl += `<div class="dm-stats">
+    <div class="dm-stat"><div class="ds-v">${wTotalPresent}</div><div class="ds-l">Presentes (sem)</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalAM}</div><div class="ds-l">Turnos AM</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalPM}</div><div class="ds-l">Turnos PM</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalLibre}</div><div class="ds-l">Libres</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalHrs}h</div><div class="ds-l">Hrs totales</div></div>
+    <div class="dm-stat"><div class="ds-v">G${satGrp}</div><div class="ds-l">Sáb ${satDate.getDate()}/${satDate.getMonth()+1}</div></div>
+  </div>`;
 
   container.innerHTML = ctrl + LEGEND_HTML;
 
@@ -805,9 +817,10 @@ function buildWeekView() {
   filtered.forEach(p => {
     if (p.area !== lastArea && weekPerson === 'all') {
       lastArea = p.area;
+      const areaCount = filtered.filter(s => s.area === p.area).length;
       const ar = document.createElement('tr');
       ar.className = 'area-row';
-      ar.innerHTML = `<td colspan="${dates.length + 2}">${p.areaLabel}</td>`;
+      ar.innerHTML = `<td colspan="${dates.length + 2}"><span class="dm-count" style="margin-right:6px">${areaCount}</span> ${p.areaLabel}</td>`;
       tbody.appendChild(ar);
     }
     const tr = document.createElement('tr');
