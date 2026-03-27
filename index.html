@@ -791,8 +791,10 @@ function buildWeekView() {
     const isPeak = PEAK_DOW.includes(dow);
     const isSun = dow === 6;
     const label = `${DAYS_SHORT[dow]} ${d.getDate()}/${d.getMonth()+1}`;
+    const dot = !isSun ? staff.filter(p => { const s = getShiftForDate(p, d); return s.dc !== 'dom' && s.dc !== 'libre'; }).length : '';
+    const dotHtml = dot !== '' ? `<br><span style="font-size:9px;font-weight:600;color:var(--light)">Dot: ${dot}</span>` : '';
     const clickable = !isSun ? ` style="cursor:pointer" data-dayidx="${i}"` : (isSun ? ' style="background:var(--mid)"' : '');
-    thead += `<th class="${isPeak?'peak-th':''}"${clickable}>${label}</th>`;
+    thead += `<th class="${isPeak?'peak-th':''}"${clickable}>${label}${dotHtml}</th>`;
   });
   thead += '<th>Hrs</th></tr></thead>';
   table.innerHTML = thead;
