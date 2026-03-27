@@ -442,12 +442,19 @@ const tabs = [
   {id:'month',label:'Mes',icon:'i-calendar'},
   {id:'week',label:'Semana',icon:'i-week'},
   {id:'day',label:'D\u00eda',icon:'i-clock'},
+  {id:'_sep'},
+  {id:'team',label:'Equipo',icon:'i-users'},
   {id:'person',label:'Persona',icon:'i-users'},
   {id:'hours',label:'Horas Total',icon:'i-bar-chart'},
-  {id:'team',label:'Equipo',icon:'i-users'},
   {id:'rules',label:'Reglas',icon:'i-shield'},
 ];
 tabs.forEach((t,i) => {
+  if (t.id === '_sep') {
+    const sep = document.createElement('div');
+    sep.style.cssText = 'width:1px;background:var(--border);margin:8px 8px;align-self:stretch';
+    navEl.appendChild(sep);
+    return;
+  }
   const el = document.createElement('div');
   el.className = 'nav-tab' + (i===0?' active':'');
   el.dataset.view = t.id;
