@@ -365,6 +365,8 @@ function weekCycle(date) {
 
 // How many rotative PM slots does each area need per day?
 const areaPMNeeded = {coloristas:1, aplicadoras:1, ayudantes:1, corte:1, lavapelo:2, recepcion:1};
+// Minimum AM (09:00) required per area on weekdays
+const areaMinAM = {coloristas:2, aplicadoras:2, ayudantes:2, corte:0, lavapelo:2, recepcion:2};
 
 // ============================================================
 // SATURDAY ROTATION — individual rotation per area (reduced team)
@@ -437,6 +439,12 @@ function dynamicPMList(area, date) {
   // Base needed + extra if fixed PM has libre
   let needed = areaPMNeeded[area] || 1;
   if (fixedHasLibre) needed++;
+
+  // Cap PM assignments so we don't go below minimum AM for the area
+  const minAM = areaMinAM[area] || 0;
+  if (minAM > 0 && available.length - needed < minAM) {
+    needed = Math.max(0, available.length - minAM);
+  }
 
   // Use absolute week number for fair rotation
   const refMon = new Date(2025, 3, 7);
