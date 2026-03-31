@@ -228,7 +228,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
 <div class="header">
   <div>
     <h1>Lazartigue &mdash; Horarios V6</h1>
-    <div class="sub">Proyecci&oacute;n Anual &middot; Turnos 9.5h &middot; Rotaci&oacute;n G1/G2/G3 cada 3 semanas &middot; 46h/sem promedio</div>
+    <div class="sub">Proyecci&oacute;n Anual &middot; Turnos 9.5h &middot; S&aacute;bados con equipo reducido (rotaci&oacute;n individual por &aacute;rea) &middot; 46h/sem promedio</div>
   </div>
 </div>
 
@@ -367,50 +367,56 @@ function weekCycle(date) {
 const areaPMNeeded = {coloristas:1, aplicadoras:1, ayudantes:1, corte:1, lavapelo:2, recepcion:1};
 
 // ============================================================
-// LIBRE SUBGROUPS — distribute post-Saturday libre across Lun/Mar/Mié
-// Each group divided into 3 slots. Max 1 ayudante and 1 lavapelo per slot.
-// Antonio and Ingrid are excluded (no libre).
+// SATURDAY ROTATION — individual rotation per area (reduced team)
+// Each area has its own rotation pool. Only those who work Saturday get libre.
+// Antonio and Ingrid are excluded (no Saturdays, no libre).
 // ============================================================
-const libreSubgroups = {
-  1: [ // G1 (excluir Antonio e Ingrid)
-    ['Marcela Carrion', 'Isabel San Mart\u00edn'],                              // slot 0
-    ['Patricia Toledo', 'Carol Silva', 'Pamela Hern\u00e1ndez'],                // slot 1
-    ['Francisca Brocco'],                                                        // slot 2
-  ],
-  2: [ // G2
-    ['Mar\u00eda Paz Hodges', 'Tamara Bustos'],                                 // slot 0
-    ['Daniel Olave', 'Carolina Madariaga', 'Valeria Otegui'],                   // slot 1
-    ['Cecilia Flores', 'Lorena Cecilia Pacheco'],                               // slot 2
-  ],
-  3: [ // G3
-    ['Paola Mella', 'Eugenia del Carmen Uribe', 'Raquel Hasson'],              // slot 0
-    ['Karen Leiva', 'Alma Ar\u00e9valo'],                                       // slot 1
-    ['Uberlinda Urra', 'Francis'],                                               // slot 2
-  ],
+const noSatNames = ['Antonio San Mart\u00edn', 'Ingrid Higuera'];
+
+const satRotation = {
+  coloristas:  ['Marcela Carrion', 'Mar\u00eda Paz Hodges', 'Paola Mella', 'Daniel Olave'],
+  aplicadoras: ['Patricia Toledo', 'Cecilia Flores', 'Karen Leiva'],
+  ayudantes:   ['Isabel San Mart\u00edn', 'Tamara Bustos', 'Uberlinda Urra', 'Carol Silva'],
+  lavapelo:    ['Eugenia del Carmen Uribe', 'Carolina Madariaga', 'Alma Ar\u00e9valo', 'Francis'],
+  recepcion:   ['Francisca Brocco', 'Valeria Otegui', 'Raquel Hasson'],
+  backoffice:  ['Pamela Hern\u00e1ndez'],  // every 2 weeks
+  corte:       ['Lorena Cecilia Pacheco'],  // every 3 weeks
 };
 
-// Persons excluded from libre system
-const noLibreNames = ['Antonio San Mart\u00edn', 'Ingrid Higuera'];
+// Returns the name of the worker assigned to Saturday for a given area, or null
+function satWorkerForArea(area, satDate) {
+  const pool = satRotation[area];
+  if (!pool) return null;
+  const diffMs = satDate.getTime() - REF_SAT.getTime();
+  const diffWeeks = Math.round(diffMs / (7 * 86400000));
+  if (area === 'backoffice') return diffWeeks % 2 === 0 ? pool[0] : null;
+  if (area === 'corte') return diffWeeks % 3 === 0 ? pool[0] : null;
+  const idx = ((diffWeeks % pool.length) + pool.length) % pool.length;
+  return pool[idx];
+}
+
+// Check if a person works a given Saturday
+function workedSaturday(person, satDate) {
+  if (noSatNames.includes(person.name)) return false;
+  const worker = satWorkerForArea(person.area, satDate);
+  return person.name === worker;
+}
+
+// Libre day base per area: 0=Lun, 1=Mar, 2=Mié
+const areaLibreBase = {
+  coloristas: 0, aplicadoras: 1, ayudantes: 0,
+  lavapelo: 1, recepcion: 2, backoffice: 2, corte: 2,
+};
 
 // Returns 0(Lun), 1(Mar), 2(Mié) for the libre day of a person after a given Saturday
-// Returns -1 if the person has no libre (Antonio, Ingrid, or not in the libre group)
+// Returns -1 if the person didn't work that Saturday
 function getLibreDay(person, satDate) {
-  if (noLibreNames.includes(person.name)) return -1;
-  const grp = satGroup(satDate);
-  if (person.group !== grp) return -1;
-  const slots = libreSubgroups[grp];
-  if (!slots) return -1;
-  let slotIdx = -1;
-  for (let i = 0; i < slots.length; i++) {
-    if (slots[i].includes(person.name)) { slotIdx = i; break; }
-  }
-  if (slotIdx === -1) return -1;
-  // Rotate every 3-week cycle: (slotIdx + cycle) % 3
-  const refMon = new Date(2025, 3, 7);
-  const mon = getMondayOfWeek(satDate);
-  const absWeek = Math.round((mon.getTime() - refMon.getTime()) / (7 * 86400000));
-  const cycle = Math.floor(absWeek / 3);
-  return (slotIdx + cycle) % 3;
+  if (!workedSaturday(person, satDate)) return -1;
+  const diffMs = satDate.getTime() - REF_SAT.getTime();
+  const diffWeeks = Math.round(diffMs / (7 * 86400000));
+  const base = areaLibreBase[person.area];
+  if (base === undefined) return -1;
+  return ((base + diffWeeks) % 3 + 3) % 3;
 }
 
 // For dynamic PM on Lun/Mar/Mié: returns list of people who should do PM
@@ -447,11 +453,11 @@ function dynamicPMList(area, date) {
 function getShiftForDate(person, date) {
   const dow = (date.getDay() + 6) % 7;
   if (dow === 6) return DOM;
-  // Antonio e Ingrid: sin sábados
-  if (dow === 5 && (person.name === 'Antonio San Mart\u00edn' || person.name === 'Ingrid Higuera')) return LIB;
+  // Saturday: individual rotation per area
   if (dow === 5) {
-    const grpThisSat = satGroup(date);
-    return person.group === grpThisSat ? SAB : LIB;
+    if (noSatNames.includes(person.name)) return LIB;
+    const worker = satWorkerForArea(person.area, date);
+    return person.name === worker ? SAB : LIB;
   }
   // Libre post-sábado: Lun(0), Mar(1), Mié(2) distribuido por subgrupos
   if (dow >= 0 && dow <= 2) {
@@ -676,11 +682,12 @@ function buildDayView() {
   let subParts = [dateStr];
   if (isPeak) subParts.push('DIA PEAK');
   if (isSab) {
-    subParts.push(`S\u00e1bado 09:00-14:00 \u2014 Trabaja G${satGroup(dayDate)}`);
+    subParts.push('S\u00e1bado 09:00-14:00 \u2014 Equipo reducido (rotaci\u00f3n individual)');
   } else if (dow >= 0 && dow <= 2) {
     const lastSat = new Date(dayDate); lastSat.setDate(lastSat.getDate() - (dow + 2));
     const dayNames = ['Lun','Mar','Mi\u00e9'];
-    subParts.push(`G${satGroup(lastSat)} — libres ${dayNames[dow]} (rotativo Lun/Mar/Mi\u00e9)`);
+    const libresHoy = staff.filter(p => getLibreDay(p, lastSat) === dow).map(p => p.name.split(' ')[0]);
+    subParts.push(`Libres ${dayNames[dow]}: ${libresHoy.length > 0 ? libresHoy.join(', ') : 'ninguno'}`);
   }
 
   let ctrl = `<div class="ctrl">
@@ -728,20 +735,32 @@ function buildDayView() {
 
   // Coverage
   html += '<div class="dm-coverage"><h4><svg class="icon icon-sm"><use href="#i-shield"/></svg> Cobertura y Validaciones</h4>';
-  const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colAM.length>=2?'ok':'warn'}">${colAM.length}</span></div>`;
-  const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplAM.length>=Math.ceil(colAM.length/2)?'ok':'warn'}">${aplAM.length}</span></div>`;
-  const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
-  const ayPresent = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresent.length>=2?'ok':'warn'}">${ayPresent.length}</span></div>`;
-  const lavPresent = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresent.length>=2?'ok':'warn'}">${lavPresent.length}</span></div>`;
-  const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 3)</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
-  if (!isSab) {
+  if (isSab) {
+    // Saturday: validate 1 per required area
+    const satAreas = ['coloristas','aplicadoras','ayudantes','lavapelo','recepcion'];
+    satAreas.forEach(aKey => {
+      const present = byArea[aKey].people.filter(p => p.shift.h > 0).length;
+      const aLabel = areas.find(a => a.key === aKey).label;
+      html += `<div class="dm-cov-row"><div class="dm-cov-franja">${aLabel}</div><span class="dm-cov-count ${present>=1?'ok':'warn'}">${present}</span></div>`;
+    });
+    const boPres = byArea['backoffice'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Back Office (alterno)</div><span class="dm-cov-count ok">${boPres}</span></div>`;
+    const cortePres = byArea['corte'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Corte (cada 3 sem)</div><span class="dm-cov-count ok">${cortePres}</span></div>`;
+  } else {
+    const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am');
+    const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colAM.length>=2?'ok':'warn'}">${colAM.length}</span></div>`;
+    const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplAM.length>=Math.ceil(colAM.length/2)?'ok':'warn'}">${aplAM.length}</span></div>`;
+    const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
+    const ayPresent = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresent.length>=2?'ok':'warn'}">${ayPresent.length}</span></div>`;
+    const lavPresent = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresent.length>=2?'ok':'warn'}">${lavPresent.length}</span></div>`;
+    const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 3)</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
     const recPM = byArea['recepcion'].people.filter(p => p.shift.dc === 'pm');
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n cierre</div><span class="dm-cov-count ${recPM.length>=1?'ok':'warn'}">${recPM.length}</span></div>`;
@@ -816,7 +835,8 @@ function buildWeekView() {
   const dates = [];
   for (let i = 0; i < 7; i++) { const d = new Date(weekStart); d.setDate(d.getDate() + i); dates.push(d); }
   const satDate = dates[5];
-  const satGrp = satGroup(satDate);
+  const satWorkers = Object.keys(satRotation).map(area => satWorkerForArea(area, satDate)).filter(Boolean);
+  const satCount = satWorkers.length;
 
   const wEnd = new Date(weekStart); wEnd.setDate(wEnd.getDate() + 6);
   const wLabel = `${weekStart.getDate()} ${MONTHS_NAMES[weekStart.getMonth()]} \u2013 ${wEnd.getDate()} ${MONTHS_NAMES[wEnd.getMonth()]} ${wEnd.getFullYear()}`;
@@ -855,7 +875,7 @@ function buildWeekView() {
     <div class="dm-stat"><div class="ds-v">${wTotalPM}</div><div class="ds-l">Turnos PM</div></div>
     <div class="dm-stat"><div class="ds-v">${wTotalLibre}</div><div class="ds-l">Libres</div></div>
     <div class="dm-stat"><div class="ds-v">${wTotalHrs}h</div><div class="ds-l">Hrs totales</div></div>
-    <div class="dm-stat"><div class="ds-v">G${satGrp}</div><div class="ds-l">Sáb ${satDate.getDate()}/${satDate.getMonth()+1}</div></div>
+    <div class="dm-stat"><div class="ds-v">${satCount}</div><div class="ds-l">S\u00e1b ${satDate.getDate()}/${satDate.getMonth()+1}</div></div>
   </div>`;
 
   container.innerHTML = ctrl + LEGEND_HTML;
@@ -1203,36 +1223,33 @@ buildTeamView();
 // ============================================================
 (function buildRulesView() {
   const container = document.getElementById('view-rules');
-  container.innerHTML = `<h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px"><svg class="icon"><use href="#i-shield"/></svg> Restricciones y Reglas V6</h2>
-    <p style="font-size:11px;color:var(--mid);margin-bottom:16px">Turnos uniformes de 9.5h con rotaci\u00f3n de 3 grupos cada 3 semanas.</p>
+  container.innerHTML = `<h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px"><svg class="icon"><use href="#i-shield"/></svg> Restricciones y Reglas V7 — Equipo Reducido S\u00e1bados</h2>
+    <p style="font-size:11px;color:var(--mid);margin-bottom:16px">Turnos uniformes de 9.5h con rotaci\u00f3n individual por \u00e1rea para s\u00e1bados.</p>
     <div class="sum-box"><h3><svg class="icon icon-sm"><use href="#i-info"/></svg> Resumen del Modelo</h3><div class="sum-grid">
       <div class="sum-item"><div class="sv">9.5h</div><div class="sl">AM 09:00-18:30</div></div>
       <div class="sum-item"><div class="sv">9.5h</div><div class="sl">PM 10:30-20:00</div></div>
       <div class="sum-item"><div class="sv">5h</div><div class="sl">S\u00e1bado 09-14</div></div>
-      <div class="sum-item"><div class="sv">138h</div><div class="sl">Ciclo 3 semanas</div></div>
-      <div class="sum-item"><div class="sv">46h</div><div class="sl">Promedio/sem</div></div>
-      <div class="sum-item"><div class="sv">G1/G2/G3</div><div class="sl">Rotaci\u00f3n S\u00e1b</div></div>
-      <div class="sum-item"><div class="sv">7</div><div class="sl">Personas/grupo</div></div>
+      <div class="sum-item"><div class="sv">~5-7</div><div class="sl">Personas/s\u00e1b</div></div>
+      <div class="sum-item"><div class="sv">Individual</div><div class="sl">Rotaci\u00f3n S\u00e1b</div></div>
       <div class="sum-item"><div class="sv">21</div><div class="sl">Personal activo</div></div>
     </div></div>`;
 
   const rules = [
     {t:'Turnos uniformes 9.5h',d:'AM: 09:00\u201318:30 (9.5h). PM: 10:30\u201320:00 (9.5h). S\u00e1bado: 09:00\u201314:00 (5h). Daniel entra 10:30 (PM est\u00e1ndar).',ok:true},
-    {t:'Rotaci\u00f3n s\u00e1bados cada 3 semanas',d:'3 grupos de 7 personas. Ciclo: G1, G2, G3, G1... Cada persona trabaja 1 s\u00e1bado cada 3 semanas.',ok:true},
-    {t:'Libre post-s\u00e1bado: Lun/Mar/Mi\u00e9 rotativo',d:'El d\u00eda libre post-s\u00e1bado se distribuye entre Lun, Mar y Mi\u00e9. Cada grupo se divide en 3 subgrupos (slots) que rotan cada ciclo de 3 semanas. M\u00e1x. 1 ayudante y 1 lavapelo por slot para mantener dotaci\u00f3n m\u00ednima.',ok:true},
-    {t:'46h/semana promedio',d:'Sem con S\u00e1b: L-V(9.5h\u00d75) + S\u00e1b(5h) = 52.5h. Sem con libre: 4 d\u00edas(9.5h\u00d74) = 38h. Sem normal: L-V(9.5h\u00d75) = 47.5h. Ciclo: 138h \u00f7 3 = 46h/sem.',ok:true},
-    {t:'Antonio e Ingrid sin s\u00e1bados ni libre',d:'Antonio San Mart\u00edn e Ingrid Higuera no trabajan s\u00e1bados (siempre LIB) y no participan del sistema de libre post-s\u00e1bado. Menos horas semanales.',ok:true},
+    {t:'S\u00e1bados con equipo reducido',d:'Rotaci\u00f3n individual por \u00e1rea. Cada s\u00e1bado trabaja 1 persona por \u00e1rea: 1 colorista (cada 4 sem), 1 aplicadora (cada 3 sem), 1 ayudante (cada 4 sem), 1 lavapelo (cada 4 sem), 1 recepci\u00f3n (cada 3 sem). Total ~5\u20137 personas.',ok:true},
+    {t:'Pamela: s\u00e1bado alterno',d:'Pamela Hern\u00e1ndez trabaja s\u00e1bado cada 2 semanas (semanas pares desde referencia).',ok:true},
+    {t:'Lorena: s\u00e1bado cada 3 sem',d:'Lorena Cecilia Pacheco trabaja s\u00e1bado cada 3 semanas.',ok:true},
+    {t:'Libre post-s\u00e1bado: solo quien trabaj\u00f3',d:'Solo quienes trabajaron el s\u00e1bado reciben libre Lun/Mar/Mi\u00e9. Cada \u00e1rea tiene un d\u00eda base que rota semanalmente: (base + semana) % 3. Menos libres entre semana = m\u00e1s cobertura Lun-Vie.',ok:true},
+    {t:'Antonio e Ingrid sin s\u00e1bados ni libre',d:'Antonio San Mart\u00edn e Ingrid Higuera no trabajan s\u00e1bados (siempre LIB) y no participan del sistema de libre post-s\u00e1bado.',ok:true},
     {t:'Pamela Hern\u00e1ndez siempre PM',d:'Pamela tiene turno PM fijo (10:30\u201320:00) todos los d\u00edas de semana.',ok:true},
-    {t:'M\u00ednimo 2 ayudantes y 2 lavapelo L-V',d:'La distribuci\u00f3n de libres garantiza que m\u00e1ximo 1 ayudante y 1 lavapelo est\u00e1n libres simult\u00e1neamente, manteniendo siempre \u2265 2 presentes de cada \u00e1rea.',ok:true},
-    {t:'Min. 2 coloristas apertura y cierre',d:'Siempre 2 AM + 2 PM. Daniel Olave PM fijo. Marcela Carrion, Mar\u00eda Paz Hodges y Paola Mella rotan el segundo PM en ciclo de 3 semanas.',ok:true},
-    {t:'1 aplicador / 2 coloristas',d:'3 aplicadoras para 4 coloristas. Patricia Toledo, Cecilia Flores y Karen Leiva rotan PM en ciclo de 3 semanas. Siempre \u2265 1:2.',ok:true},
-    {t:'1 ayudante / 1 colorista',d:'4 ayudantes: Isabel San Mart\u00edn, Tamara Bustos, Uberlinda Urra y Carol Silva. Rotan 1 PM/d\u00eda en ciclo de 3 semanas.',ok:true},
-    {t:'Recepci\u00f3n: 3 en apertura',d:'Antonio San Mart\u00edn AM fijo + Francisca Brocco, Valeria Otegui y Raquel Hasson rotan 1 PM/d\u00eda (siempre 2 AM). Total apertura: Antonio + 2 = 3 personas.',ok:true},
+    {t:'Daniel participa en rotaci\u00f3n s\u00e1bados',d:'Daniel Olave rota en el pool de coloristas para s\u00e1bados (09:00\u201314:00). PM fijo durante la semana.',ok:true},
+    {t:'M\u00e1s cobertura Lun-Vie',d:'Al reducir los s\u00e1bados de grupo completo a equipo m\u00ednimo, hay menos libres entre semana (~2\u20133/d\u00eda en vez de ~7\u20138). Ganancia en cobertura especialmente Jue/Vie peak.',ok:true},
+    {t:'Min. 2 coloristas apertura y cierre',d:'Siempre 2 AM + 2 PM. Daniel Olave PM fijo. Marcela, Mar\u00eda Paz y Paola rotan el segundo PM.',ok:true},
+    {t:'1 aplicador / 2 coloristas',d:'3 aplicadoras para 4 coloristas. Patricia, Cecilia y Karen rotan PM. Siempre \u2265 1:2.',ok:true},
+    {t:'Recepci\u00f3n: 3 en apertura',d:'Antonio AM fijo + Francisca, Valeria y Raquel rotan 1 PM/d\u00eda (siempre 2 AM). Total apertura: 3.',ok:true},
     {t:'Peak Jueves y Viernes',d:'M\u00e1xima dotaci\u00f3n en ma\u00f1ana de peak. 3 coloristas + 2 aplicadoras + 2 ayudantes en apertura.',ok:true},
-    {t:'Daniel Olave entra 10:30',d:'PM est\u00e1ndar 10:30\u201320:00 (9.5h). Horario uniforme con el resto del turno PM.',ok:true},
-    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM + 1 corte PM + 1 ayudante PM + 2 lavapelo PM + 2 recepci\u00f3n PM (Francisca fija + rotativa). Nadie cierra todos los d\u00edas.',ok:true},
-    {t:'S\u00e1bado 09:00-14:00',d:'Solo 1 grupo trabaja (7 personas, sin Antonio ni Ingrid). Los otros 2 grupos descansan. Rotaci\u00f3n de 3 semanas garantiza equidad.',ok:true},
-    {t:'Grupos (8-7-7)',d:'G1: Marcela, Patricia, Ingrid, Isabel, Antonio, Pamela, Francisca B., Carol. G2: Mar\u00eda Paz, Daniel, Cecilia F., L. Cecilia P., Tamara, Carolina, Valeria. G3: Paola, Karen, Uberlinda, Alma, Francis, Raquel, Carmencita.',ok:true},
+    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM + 1 corte PM + 1 ayudante PM + 2 lavapelo PM. Nadie cierra todos los d\u00edas.',ok:true},
+    {t:'Rotaci\u00f3n s\u00e1bados por \u00e1rea',d:'Coloristas: Marcela, M\u00aa Paz, Paola, Daniel (c/4 sem). Aplicadoras: Patricia, Cecilia, Karen (c/3). Ayudantes: Isabel, Tamara, Ube, Carol (c/4). Lavapelo: Eugenia, Carolina, Alma, Francis (c/4). Recepci\u00f3n: Francisca, Valeria, Raquel (c/3).',ok:true},
   ];
 
   const grid = document.createElement('div');
@@ -1276,11 +1293,12 @@ function openDayDetail(date) {
   let subText = dateStr;
   if (isPeak) subText += ' \u2014 DIA PEAK';
   if (isSab) {
-    subText += ` \u2014 S\u00e1bado 09:00-14:00 \u2014 Trabaja G${satGroup(date)}`;
+    subText += ' \u2014 S\u00e1bado 09:00-14:00 \u2014 Equipo reducido (rotaci\u00f3n individual)';
   } else if (dow >= 0 && dow <= 2) {
     const lastSat = new Date(date); lastSat.setDate(lastSat.getDate() - (dow + 2));
     const dayNames = ['Lun','Mar','Mi\u00e9'];
-    subText += ` \u2014 G${satGroup(lastSat)} — libres ${dayNames[dow]} (rotativo Lun/Mar/Mi\u00e9)`;
+    const libresHoy = staff.filter(p => getLibreDay(p, lastSat) === dow).map(p => p.name.split(' ')[0]);
+    subText += ` \u2014 Libres ${dayNames[dow]}: ${libresHoy.length > 0 ? libresHoy.join(', ') : 'ninguno'}`;
   }
   dmSub.textContent = subText;
 
@@ -1314,29 +1332,35 @@ function openDayDetail(date) {
   // Coverage
   html += '<div class="dm-coverage"><h4><svg class="icon icon-sm"><use href="#i-shield"/></svg> Cobertura y Validaciones</h4>';
 
-  const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
-  const colApOk = colAM.length >= 2;
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colApOk?'ok':'warn'}">${colAM.length}</span></div>`;
+  if (isSab) {
+    const satAreaKeys = ['coloristas','aplicadoras','ayudantes','lavapelo','recepcion'];
+    satAreaKeys.forEach(aKey => {
+      const present = byArea[aKey].people.filter(p => p.shift.h > 0).length;
+      const aLabel = areas.find(a => a.key === aKey).label;
+      html += `<div class="dm-cov-row"><div class="dm-cov-franja">${aLabel}</div><span class="dm-cov-count ${present>=1?'ok':'warn'}">${present}</span></div>`;
+    });
+    const boPres = byArea['backoffice'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Back Office (alterno)</div><span class="dm-cov-count ok">${boPres}</span></div>`;
+    const cortePres = byArea['corte'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Corte (cada 3 sem)</div><span class="dm-cov-count ok">${cortePres}</span></div>`;
+  } else {
+    const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am');
+    const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colAM.length>=2?'ok':'warn'}">${colAM.length}</span></div>`;
 
-  const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  const aplNeeded = Math.ceil(colAM.length / 2);
-  const aplOk = aplAM.length >= aplNeeded;
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplOk?'ok':'warn'}">${aplAM.length}</span></div>`;
+    const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplAM.length>=Math.ceil(colAM.length/2)?'ok':'warn'}">${aplAM.length}</span></div>`;
 
-  const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  const ayOk = ayAM.length >= colAM.length;
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayOk?'ok':'warn'}">${ayAM.length}</span></div>`;
-  const ayPresentM = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresentM.length>=2?'ok':'warn'}">${ayPresentM.length}</span></div>`;
-  const lavPresentM = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresentM.length>=2?'ok':'warn'}">${lavPresentM.length}</span></div>`;
+    const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
+    const ayPresentM = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresentM.length>=2?'ok':'warn'}">${ayPresentM.length}</span></div>`;
+    const lavPresentM = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresentM.length>=2?'ok':'warn'}">${lavPresentM.length}</span></div>`;
 
-  const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  const recOk = recAM.length >= 3;
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 2)</div><span class="dm-cov-count ${recOk?'ok':'warn'}">${recAM.length}</span></div>`;
+    const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 3)</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
 
-  if (!isSab) {
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
     const recPM = byArea['recepcion'].people.filter(p => p.shift.dc === 'pm');
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n cierre</div><span class="dm-cov-count ${recPM.length>=1?'ok':'warn'}">${recPM.length}</span></div>`;
