@@ -740,7 +740,7 @@ function buildDayView() {
   const lavPresent = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
   html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresent.length>=2?'ok':'warn'}">${lavPresent.length}</span></div>`;
   const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 2)</div><span class="dm-cov-count ${recAM.length>=2?'ok':'warn'}">${recAM.length}</span></div>`;
   if (!isSab) {
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
     const recPM = byArea['recepcion'].people.filter(p => p.shift.dc === 'pm');
@@ -1227,7 +1227,7 @@ buildTeamView();
     {t:'Min. 2 coloristas apertura y cierre',d:'Siempre 2 AM + 2 PM. Daniel Olave PM fijo. Marcela Carrion, Mar\u00eda Paz Hodges y Paola Mella rotan el segundo PM en ciclo de 3 semanas.',ok:true},
     {t:'1 aplicador / 2 coloristas',d:'3 aplicadoras para 4 coloristas. Patricia Toledo, Cecilia Flores y Karen Leiva rotan PM en ciclo de 3 semanas. Siempre \u2265 1:2.',ok:true},
     {t:'1 ayudante / 1 colorista',d:'4 ayudantes: Isabel San Mart\u00edn, Tamara Bustos, Uberlinda Urra y Carol Silva. Rotan 1 PM/d\u00eda en ciclo de 3 semanas.',ok:true},
-    {t:'Recepci\u00f3n: Antonio + 2 (3 personas)',d:'Antonio San Mart\u00edn (AM fijo, sin s\u00e1bados) + Francisca Brocco (PM fijo, Art.22) + Valeria Otegui (G2) + Raquel Hasson (G3) rotan PM.',ok:true},
+    {t:'Recepci\u00f3n: m\u00edn 2 apertura',d:'Antonio San Mart\u00edn (AM fijo) + Valeria Otegui (G2) + Raquel Hasson (G3) rotan: siempre 2 en AM (apertura). Francisca Brocco PM fijo (Art.22). Valeria y Raquel nunca coinciden en PM.',ok:true},
     {t:'Peak Jueves y Viernes',d:'M\u00e1xima dotaci\u00f3n en ma\u00f1ana de peak. 3 coloristas + 2 aplicadoras + 2 ayudantes en apertura.',ok:true},
     {t:'Daniel Olave entra 10:30',d:'PM est\u00e1ndar 10:30\u201320:00 (9.5h). Horario uniforme con el resto del turno PM.',ok:true},
     {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM + 1 corte PM + 1 ayudante PM + 2 lavapelo PM + 2 recepci\u00f3n PM (Francisca fija + rotativa). Nadie cierra todos los d\u00edas.',ok:true},
@@ -1333,8 +1333,8 @@ function openDayDetail(date) {
   html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresentM.length>=2?'ok':'warn'}">${lavPresentM.length}</span></div>`;
 
   const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am' || p.shift.dc === 'sab');
-  const recOk = recAM.length >= 3;
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura</div><span class="dm-cov-count ${recOk?'ok':'warn'}">${recAM.length}</span></div>`;
+  const recOk = recAM.length >= 2;
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 2)</div><span class="dm-cov-count ${recOk?'ok':'warn'}">${recAM.length}</span></div>`;
 
   if (!isSab) {
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
