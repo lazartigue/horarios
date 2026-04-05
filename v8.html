@@ -1058,47 +1058,66 @@ function buildHoursView() {
 
   const table = document.createElement('table');
   table.className = 'hrs-table';
+  // 42h efectivas semanales = máximo legal sin Art.22 bis
+  const HRS_CONTRATO_SEM = 42;
+
   table.innerHTML = `<thead><tr>
-    <th>Nombre</th><th>\u00c1rea</th><th>Horario</th>
-    <th>Hrs Totales</th><th>D\u00edas L-V</th><th>Turnos AM</th><th>Turnos PM</th><th>S\u00e1bados</th><th>Libres</th><th>Hrs/Sem Prom</th><th></th>
+    <th>Nombre</th><th>\u00c1rea</th>
+    <th>D\u00edas L-V</th><th>AM</th><th>PM</th><th>S\u00e1b</th><th>Libres</th>
+    <th>Hrs Contrato</th><th>Hrs En Local</th><th>Hrs Efectivas</th><th>Diferencia</th><th></th>
   </tr></thead>`;
 
   const tbody = document.createElement('tbody');
   let lastArea = '';
-  let grandTotal = 0;
+  let grandTotalLocal = 0, grandTotalEfectivas = 0, grandTotalContrato = 0;
 
   staff.forEach((p, idx) => {
     if (p.area !== lastArea) {
       lastArea = p.area;
       const ar = document.createElement('tr');
       ar.className = 'area-row';
-      ar.innerHTML = `<td colspan="11">${p.areaLabel}</td>`;
+      ar.innerHTML = `<td colspan="12">${p.areaLabel}</td>`;
       tbody.appendChild(ar);
     }
 
     const stats = computeHoursInRange(p, startDate, endDate);
-    const avgWeek = totalWeeks > 0 ? (stats.hrs / totalWeeks).toFixed(1) : 0;
-    grandTotal += stats.hrs;
+    const hrsLocal = stats.hrs;
+    const hrsEfectivas = stats.hrs - stats.daysLV; // descuenta 1h almuerzo por día L-V
+    const hrsContrato = totalWeeks * HRS_CONTRATO_SEM;
+    const diff = hrsEfectivas - hrsContrato;
+    const diffColor = diff >= 0 ? '#E74C3C' : (diff > -3 ? '#D4A017' : '#3B82F6');
+    const diffSign = diff >= 0 ? '+' : '';
+
+    grandTotalLocal += hrsLocal;
+    grandTotalEfectivas += hrsEfectivas;
+    grandTotalContrato += hrsContrato;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="font-weight:600">${p.name}</td>
       <td style="font-size:11px;color:var(--mid)">${p.areaLabel}</td>
-      <td style="font-size:10px;color:var(--mid)">${p.note||''}</td>
-      <td style="font-weight:700">${stats.hrs.toFixed(1)}h</td>
       <td>${stats.daysLV}</td>
       <td>${stats.am}</td>
       <td>${stats.pm}</td>
       <td>${stats.sats}</td>
       <td>${stats.libres}</td>
-      <td style="font-weight:700">${avgWeek}h</td>
-      <td><a href="#" class="hrs-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver horario</a></td>`;
+      <td style="color:var(--mid)">${hrsContrato.toFixed(1)}h</td>
+      <td>${hrsLocal.toFixed(1)}h</td>
+      <td style="font-weight:700">${hrsEfectivas.toFixed(1)}h</td>
+      <td style="font-weight:700;color:${diffColor}">${diffSign}${diff.toFixed(1)}h</td>
+      <td><a href="#" class="hrs-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver</a></td>`;
     tbody.appendChild(tr);
   });
 
   // Total row
   const totalRow = document.createElement('tr');
-  totalRow.innerHTML = `<td colspan="3" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td><td style="font-weight:700">${grandTotal.toFixed(1)}h</td><td colspan="7"></td>`;
+  const totalDiff = grandTotalEfectivas - grandTotalContrato;
+  totalRow.innerHTML = `<td colspan="7" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td>
+    <td style="font-weight:700;color:var(--mid)">${grandTotalContrato.toFixed(1)}h</td>
+    <td style="font-weight:700">${grandTotalLocal.toFixed(1)}h</td>
+    <td style="font-weight:700">${grandTotalEfectivas.toFixed(1)}h</td>
+    <td style="font-weight:700;color:${totalDiff>=0?'#E74C3C':'#3B82F6'}">${totalDiff>=0?'+':''}${totalDiff.toFixed(1)}h</td>
+    <td></td>`;
   totalRow.style.borderTop = '2px solid var(--black)';
   tbody.appendChild(totalRow);
 
@@ -1107,12 +1126,14 @@ function buildHoursView() {
   // Summary
   const summary = document.createElement('div');
   summary.className = 'sum-box';
-  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel}</h3>
+  const avgEfectivasSem = totalWeeks > 0 ? (grandTotalEfectivas / staff.length / totalWeeks).toFixed(1) : 0;
+  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel} &middot; ${totalWeeks} semanas &middot; Contrato: ${HRS_CONTRATO_SEM}h/sem efectivas</h3>
     <div class="sum-grid">
-      <div class="sum-item"><div class="sv">${grandTotal.toFixed(1)}</div><div class="sl">Hrs equipo</div></div>
-      <div class="sum-item"><div class="sv">${staff.length}</div><div class="sl">Personas</div></div>
-      <div class="sum-item"><div class="sv">${(grandTotal / staff.length).toFixed(1)}</div><div class="sl">Hrs/persona</div></div>
-      <div class="sum-item"><div class="sv">${totalWeeks > 0 ? (grandTotal / staff.length / totalWeeks).toFixed(1) : 0}</div><div class="sl">Hrs/sem prom</div></div>
+      <div class="sum-item"><div class="sv">${grandTotalContrato.toFixed(0)}</div><div class="sl">Hrs contrato equipo</div></div>
+      <div class="sum-item"><div class="sv">${grandTotalEfectivas.toFixed(1)}</div><div class="sl">Hrs efectivas equipo</div></div>
+      <div class="sum-item"><div class="sv">${(grandTotalEfectivas / staff.length).toFixed(1)}</div><div class="sl">Efectivas/persona</div></div>
+      <div class="sum-item"><div class="sv">${avgEfectivasSem}</div><div class="sl">Efectivas/sem prom</div></div>
+      <div class="sum-item"><div class="sv" style="color:${totalDiff>=0?'#E74C3C':'#3B82F6'}">${totalDiff>=0?'+':''}${totalDiff.toFixed(1)}</div><div class="sl">Diferencia total</div></div>
     </div>`;
   container.appendChild(summary);
   container.appendChild(table);
