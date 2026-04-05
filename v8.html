@@ -1049,9 +1049,10 @@ function buildHoursView() {
     rangeLabel = `${MONTHS_NAMES[hrsMonth]} ${hrsYear}`;
   }
 
-  // Compute weeks in range for average
-  const totalDays = Math.round((endDate - startDate) / 86400000) + 1;
-  const totalWeeks = totalDays / 7;
+  // Compute weeks (Mon-Sun) touched by this range for a fair average
+  const firstMon = getMondayOfWeek(startDate);
+  const lastMon = getMondayOfWeek(endDate);
+  const totalWeeks = Math.round((lastMon - firstMon) / (7 * 86400000)) + 1;
 
   const table = document.createElement('table');
   table.className = 'hrs-table';
