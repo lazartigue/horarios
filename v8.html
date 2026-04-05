@@ -1051,99 +1051,104 @@ function buildHoursView() {
     rangeLabel = `${MONTHS_NAMES[hrsMonth]} ${hrsYear}`;
   }
 
-  // Count weekdays (L-V) in the date range for contract hours
-  const totalDaysInRange = Math.round((endDate - startDate) / 86400000) + 1;
-  const totalWeeks = totalDaysInRange / 7;
-  let weekdaysInRange = 0;
-  {
-    const d = new Date(startDate);
-    while (d <= endDate) {
-      const wd = d.getDay(); // 0=Sun, 6=Sat
-      if (wd >= 1 && wd <= 5) weekdaysInRange++;
+  // Máximo legal: 42h efectivas por semana (Lun-Sáb)
+  const MAX_EFECTIVAS_SEM = 42;
+
+  // Build list of weeks (Mon-Sat) that overlap with the range
+  const weeks = [];
+  let wMon = getMondayOfWeek(startDate);
+  while (wMon <= endDate) {
+    const wSat = new Date(wMon); wSat.setDate(wSat.getDate() + 5);
+    // Clamp to range
+    const wStart = wMon < startDate ? startDate : wMon;
+    const wEnd = wSat > endDate ? endDate : wSat;
+    const label = `${wMon.getDate()}/${wMon.getMonth()+1}`;
+    weeks.push({mon: new Date(wMon), sat: new Date(wSat), start: wStart, end: wEnd, label});
+    wMon.setDate(wMon.getDate() + 7);
+  }
+
+  // Compute weekly effective hours per person (Lun-Sáb)
+  function weekEffective(person, monDate) {
+    let local = 0, daysLV = 0, sab = 0, libre = 0;
+    const d = new Date(monDate);
+    for (let i = 0; i < 6; i++) { // Mon to Sat
+      const s = getShiftForDate(person, d);
+      local += s.h;
+      if (s.dc === 'am' || s.dc === 'pm') daysLV++;
+      if (s.dc === 'sab') sab++;
+      if (s.dc === 'libre') libre++;
       d.setDate(d.getDate() + 1);
     }
+    const efectivas = local - daysLV; // 1h almuerzo por día L-V
+    return {local, efectivas, daysLV, sab, libre};
   }
-  // 42h efectivas / 5 días = 8.4h efectivas por día laborable
-  const HRS_CONTRATO_DIA = 42 / 5;
 
+  // Build table: one row per person, one column per week
   const table = document.createElement('table');
   table.className = 'hrs-table';
-
-  table.innerHTML = `<thead><tr>
-    <th>Nombre</th><th>\u00c1rea</th>
-    <th>D\u00edas L-V</th><th>AM</th><th>PM</th><th>S\u00e1b</th><th>Libres</th>
-    <th>Hrs Contrato</th><th>Hrs En Local</th><th>Hrs Efectivas</th><th>Diferencia</th><th></th>
-  </tr></thead>`;
+  let thead = `<thead><tr><th>Nombre</th><th>\u00c1rea</th>`;
+  weeks.forEach(w => { thead += `<th style="font-size:9px">Sem ${w.label}</th>`; });
+  thead += `<th>Total Efect.</th><th>Prom/Sem</th><th></th></tr></thead>`;
+  table.innerHTML = thead;
 
   const tbody = document.createElement('tbody');
   let lastArea = '';
-  let grandTotalLocal = 0, grandTotalEfectivas = 0, grandTotalContrato = 0;
+  let violations = 0;
+  const colCount = weeks.length + 5;
 
   staff.forEach((p, idx) => {
     if (p.area !== lastArea) {
       lastArea = p.area;
       const ar = document.createElement('tr');
       ar.className = 'area-row';
-      ar.innerHTML = `<td colspan="12">${p.areaLabel}</td>`;
+      ar.innerHTML = `<td colspan="${colCount}">${p.areaLabel}</td>`;
       tbody.appendChild(ar);
     }
 
-    const stats = computeHoursInRange(p, startDate, endDate);
-    const hrsLocal = stats.hrs;
-    const hrsEfectivas = stats.hrs - stats.daysLV; // descuenta 1h almuerzo por día L-V
-    // Contrato = días L-V del calendario × 8.4h (no cuenta libres como reducción)
-    const hrsContrato = weekdaysInRange * HRS_CONTRATO_DIA;
-    const diff = hrsEfectivas - hrsContrato;
-    const diffColor = diff >= 0 ? '#E74C3C' : (diff > -3 ? '#D4A017' : '#3B82F6');
-    const diffSign = diff >= 0 ? '+' : '';
-
-    grandTotalLocal += hrsLocal;
-    grandTotalEfectivas += hrsEfectivas;
-    grandTotalContrato += hrsContrato;
-
     const tr = document.createElement('tr');
+    let totalEfectivas = 0;
+    let weekCells = '';
+
+    weeks.forEach(w => {
+      const wk = weekEffective(p, w.mon);
+      totalEfectivas += wk.efectivas;
+      const over = wk.efectivas > MAX_EFECTIVAS_SEM;
+      if (over) violations++;
+      const color = over ? '#E74C3C' : (wk.efectivas > 41 ? '#D4A017' : 'inherit');
+      const bold = over ? 'font-weight:700;' : '';
+      let detail = `${wk.efectivas.toFixed(1)}`;
+      if (wk.sab) detail += ` \u2606`;
+      if (wk.libre) detail += ` \u2022L`;
+      weekCells += `<td style="${bold}color:${color};font-size:11px" title="Local: ${wk.local.toFixed(1)}h | L-V: ${wk.daysLV}d | S\u00e1b: ${wk.sab} | Libre: ${wk.libre}">${detail}</td>`;
+    });
+
+    const avgSem = weeks.length > 0 ? (totalEfectivas / weeks.length).toFixed(1) : 0;
     tr.innerHTML = `
-      <td style="font-weight:600">${p.name}</td>
-      <td style="font-size:11px;color:var(--mid)">${p.areaLabel}</td>
-      <td>${stats.daysLV}</td>
-      <td>${stats.am}</td>
-      <td>${stats.pm}</td>
-      <td>${stats.sats}</td>
-      <td>${stats.libres}</td>
-      <td style="color:var(--mid)">${hrsContrato.toFixed(1)}h</td>
-      <td>${hrsLocal.toFixed(1)}h</td>
-      <td style="font-weight:700">${hrsEfectivas.toFixed(1)}h</td>
-      <td style="font-weight:700;color:${diffColor}">${diffSign}${diff.toFixed(1)}h</td>
+      <td style="font-weight:600;white-space:nowrap">${p.name}</td>
+      <td style="font-size:10px;color:var(--mid)">${p.areaLabel}</td>
+      ${weekCells}
+      <td style="font-weight:700">${totalEfectivas.toFixed(1)}h</td>
+      <td style="font-weight:600">${avgSem}h</td>
       <td><a href="#" class="hrs-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver</a></td>`;
     tbody.appendChild(tr);
   });
-
-  // Total row
-  const totalRow = document.createElement('tr');
-  const totalDiff = grandTotalEfectivas - grandTotalContrato;
-  totalRow.innerHTML = `<td colspan="7" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td>
-    <td style="font-weight:700;color:var(--mid)">${grandTotalContrato.toFixed(1)}h</td>
-    <td style="font-weight:700">${grandTotalLocal.toFixed(1)}h</td>
-    <td style="font-weight:700">${grandTotalEfectivas.toFixed(1)}h</td>
-    <td style="font-weight:700;color:${totalDiff>=0?'#E74C3C':'#3B82F6'}">${totalDiff>=0?'+':''}${totalDiff.toFixed(1)}h</td>
-    <td></td>`;
-  totalRow.style.borderTop = '2px solid var(--black)';
-  tbody.appendChild(totalRow);
 
   table.appendChild(tbody);
 
   // Summary
   const summary = document.createElement('div');
   summary.className = 'sum-box';
-  const avgEfectivasSem = totalWeeks > 0 ? (grandTotalEfectivas / staff.length / totalWeeks).toFixed(1) : 0;
-  const hrsContratoPersona = (weekdaysInRange * HRS_CONTRATO_DIA);
-  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel} &middot; ${weekdaysInRange} d\u00edas L-V &middot; Contrato: ${hrsContratoPersona.toFixed(1)}h efectivas/persona</h3>
+  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel} &middot; ${weeks.length} semanas &middot; L\u00edmite: ${MAX_EFECTIVAS_SEM}h efectivas/semana (Lun-S\u00e1b)</h3>
     <div class="sum-grid">
-      <div class="sum-item"><div class="sv">${grandTotalContrato.toFixed(0)}</div><div class="sl">Hrs contrato equipo</div></div>
-      <div class="sum-item"><div class="sv">${grandTotalEfectivas.toFixed(1)}</div><div class="sl">Hrs efectivas equipo</div></div>
-      <div class="sum-item"><div class="sv">${(grandTotalEfectivas / staff.length).toFixed(1)}</div><div class="sl">Efectivas/persona</div></div>
-      <div class="sum-item"><div class="sv">${avgEfectivasSem}</div><div class="sl">Efectivas/sem prom</div></div>
-      <div class="sum-item"><div class="sv" style="color:${totalDiff>=0?'#E74C3C':'#3B82F6'}">${totalDiff>=0?'+':''}${totalDiff.toFixed(1)}</div><div class="sl">Diferencia total</div></div>
+      <div class="sum-item"><div class="sv">${weeks.length}</div><div class="sl">Semanas</div></div>
+      <div class="sum-item"><div class="sv">${staff.length}</div><div class="sl">Personas</div></div>
+      <div class="sum-item"><div class="sv" style="color:${violations>0?'#E74C3C':'#333'}">${violations}</div><div class="sl">Semanas &gt;42h</div></div>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--mid)">
+      Hrs efectivas = horas en local \u2212 1h almuerzo por d\u00eda L-V. S\u00e1bado sin descuento.
+      &nbsp;\u2606 = trabaja s\u00e1bado &nbsp;\u2022L = tiene libre.
+      <span style="color:#E74C3C">\u25a0</span> Rojo = supera 42h.
+      <span style="color:#D4A017">\u25a0</span> Amarillo = entre 41-42h.
     </div>`;
   container.appendChild(summary);
   container.appendChild(table);
