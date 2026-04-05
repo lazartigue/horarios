@@ -18,7 +18,7 @@
 | **Coloristas** | Marcela Carrion, María Paz Hodges, Paola Mella, Daniel Olave | Daniel siempre PM (10:30). Las otras 3 rotan AM/PM. |
 | **Aplicadoras** | Patricia Toledo, Cecilia Flores, Karen Leiva | Rotan AM/PM entre ellas. |
 | **Corte / Peinado** | Lorena Cecilia Pacheco, Ingrid Higuera | Rotan AM/PM entre ellas. |
-| **Ayudantes** | Isabel San Martín, Tamara Bustos, Uberlinda Urra, Carol Silva | Rotan AM/PM. 1 PM por día. |
+| **Ayudantes** | Isabel San Martín, Tamara Bustos, Uberlinda Urra, Carol Silva | Rotan AM/PM. 1 PM (Lun-Mié), 2 PM (Jue-Vie). |
 | **Lavapelo y Secado** | Eugenia Uribe, Carolina Madariaga, Alma Arévalo, Francis | Rotan AM/PM. 2 PM por día. |
 | **Recepción** | Antonio San Martín, Francisca Brocco, Valeria Otegui, Raquel Hasson | Antonio siempre AM. Las otras 3 rotan 1 PM por día. |
 | **Back Office** | Pamela Hernández | Siempre PM (10:30). |
@@ -80,7 +80,8 @@ Si asignar un turno PM a alguien dejaría su área por debajo del mínimo de ape
 
 ### Dotación mínima en cierre (hasta 20:00)
 - Siempre al menos 2 coloristas PM (Daniel fijo + 1 rotativa).
-- Al menos 1 aplicadora PM, 1 corte PM, 1 ayudante PM.
+- Al menos 1 aplicadora PM, 1 corte PM.
+- **Ayudantes PM**: mínimo 1 (Lun-Mié), **mínimo 2 (Jue-Vie)** por ser días peak.
 - Al menos 2 lavapelo PM.
 - Al menos 1 recepción PM.
 
