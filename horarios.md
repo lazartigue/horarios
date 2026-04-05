@@ -1,308 +1,106 @@
-# Horarios Salón Lazartigue — Sesión de Planificación
+# Lazartigue — Sistema de Horarios V7
 
-## Personal Actual (21 personas activas, Carol en licencia)
+## Modelo General
 
-| Área | Personas |
-|------|----------|
-| **Coloristas** | Marcela, Paola, María Paz, Daniel |
-| **Aplicadoras** | Paty, Karen, Ceci Flores |
-| **Masajista/Ayudante** | Isa San Martín, Carol (licencia), Ube, Tamara |
-| **Corte/Peinado/Apoyo Color** | Ceci Pacheco |
-| **Peinado/Secado** | Ingrid |
-| **Lavapelo y Secado** | Carmencita, Alma, Carolina, Francis |
-| **Recepción** | Vale, Raquel, Fran Brocco (art.22), Antonio San Martín (art.22) |
-| **Back Office** | Pamela Hernández |
-
-## Restricciones
-
-- **47 hrs semanales** máximo por persona
-- **Peak lavado: 12:00–16:00** → máximo personal de lavado en esa franja
-- **Al cierre:** mínimo 1 lavapelo + 1 colorista + 1 recepción + 1 de corte (Paty, Ceci Pacheco o Daniel)
-- **Antonio San Martín:** siempre a la apertura (9:00)
-- **Daniel:** nunca antes de 10:30
-- **Recepción:** al menos 1 al inicio y 1 al cierre
+- **Horario de atención**: Lunes a Viernes 09:00–20:00, Sábados 09:00–14:00.
+- **Turno AM**: 09:00–18:30 (9.5 horas).
+- **Turno PM**: 10:30–20:00 (9.5 horas).
+- **Turno Sábado**: 09:00–14:00 (5 horas).
+- **Domingos**: cerrado.
+- **Equipo**: 21 personas distribuidas en 7 áreas.
 
 ---
 
-## Escenario 1: Lunes a Viernes (9:00–20:00)
+## Áreas y Personas
 
-**Turnos:** A (9:00–18:30) | B (10:30–20:00) | 47 hrs/semana
-
-### COLORISTAS
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Marcela | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:00 | 47 |
-| Paola | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 47 |
-| María Paz | 9:00-18:30 (A) | 9:00-18:30 (A) | 10:30-20:00 (B) | 10:30-20:00 (B) | 9:00-18:30 (A) | 47 |
-| Daniel | 10:30-20:00 (B) | 10:30-20:00 (B) | 10:30-20:00 (B) | 10:30-20:00 (B) | 10:30-19:30 (B) | 47 |
-
-### APLICADORAS
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Paty | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 10:30-20:00 (B) | 47 |
-| Karen | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 9:00-18:00 | 47 |
-| Ceci Flores | 9:00-18:30 (A) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 47 |
-
-### CORTE / PEINADO / SECADO
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Ceci Pacheco | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 9:00-18:00 | 47 |
-| Ingrid | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 10:30-20:00 (B) | 47 |
-
-### MASAJISTA / AYUDANTE
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Isa San Martín | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:00 | 47 |
-| Ube | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 9:00-18:30 (A) | 47 |
-| Tamara | 9:00-18:30 (A) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 47 |
-
-### LAVAPELO Y SECADO
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Carmencita | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:00 | 47 |
-| Alma | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 47 |
-| Carolina | 9:00-18:30 (A) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 9:00-18:00 | 46 |
-| Francis | 10:30-20:00 (B) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 10:30-20:00 (B) | 47 |
-
-### RECEPCIÓN
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| **Antonio San Martín** | 9:00-18:30 (A) | 9:00-18:30 (A) | 9:00-18:30 (A) | 9:00-18:30 (A) | 9:00-18:00 | 47 |
-| Vale | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 47 |
-| Raquel | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 9:00-18:30 (A) | 10:30-20:00 (B) | 47 |
-| Fran Brocco | 10:30-20:00 (B) | 10:30-20:00 (B) | 10:30-20:00 (B) | 10:30-20:00 (B) | 10:30-20:00 (B) | 47 |
-
-### BACK OFFICE
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Pamela Hernández | 9:00-18:30 (A) | 9:00-18:30 (A) | 9:00-18:30 (A) | 9:00-18:30 (A) | 9:00-18:00 | 47 |
-
-### Verificación Corte al Cierre (20:00)
-
-| Día | Quién cierra de corte |
-|-----|----------------------|
-| Lunes | Daniel + Ceci Pacheco |
-| Martes | Daniel + Paty |
-| Miércoles | Daniel + Ceci Pacheco |
-| Jueves | Daniel + Paty |
-| Viernes | Daniel + Paty |
+| Área | Personas | Rol |
+|---|---|---|
+| **Coloristas** | Marcela Carrion, María Paz Hodges, Paola Mella, Daniel Olave | Daniel siempre PM (10:30). Las otras 3 rotan AM/PM. |
+| **Aplicadoras** | Patricia Toledo, Cecilia Flores, Karen Leiva | Rotan AM/PM entre ellas. |
+| **Corte / Peinado** | Lorena Cecilia Pacheco, Ingrid Higuera | Rotan AM/PM entre ellas. |
+| **Ayudantes** | Isabel San Martín, Tamara Bustos, Uberlinda Urra, Carol Silva | Rotan AM/PM. 1 PM por día. |
+| **Lavapelo y Secado** | Eugenia Uribe, Carolina Madariaga, Alma Arévalo, Francis | Rotan AM/PM. 2 PM por día. |
+| **Recepción** | Antonio San Martín, Francisca Brocco, Valeria Otegui, Raquel Hasson | Antonio siempre AM. Las otras 3 rotan 1 PM por día. |
+| **Back Office** | Pamela Hernández | Siempre PM (10:30). |
 
 ---
 
-## Escenario 2: Lunes a Sábado (Sábado cierra 14:00)
+## Turnos Lunes a Viernes
 
-**Turnos Lu-Vi:** A (9:00–17:30) | B (11:30–20:00) | **Sábado:** 9:00–14:00 | Rotación G1/G2
+Cada área tiene una rotación de turnos AM/PM que se repite en un **ciclo de 3 semanas**. Esto define quién entra a las 09:00 (AM) y quién a las 10:30 (PM) cada día de Martes a Viernes.
 
-### COLORISTAS
+**Lunes, Martes y Miércoles** tienen una asignación dinámica de PM: el sistema determina quién hace PM esos días considerando quién tiene libre esa semana, para asegurar que siempre haya suficiente personal en apertura (09:00).
 
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Sábado | Hrs |
-|--------|-------|--------|-----------|--------|---------|--------|-----|
-| Marcela | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Paola | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | G2: LIBRE | 47 |
-| María Paz | 9:00-17:30 (A) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | G2: LIBRE | 47 |
-| Daniel | 10:30-19:00 (B) | 10:30-19:00 (B) | 10:30-19:00 (B) | 10:30-19:00 (B) | 10:30-19:00 (B) | G2: 10:30-14:00 | 47 |
-
-### APLICADORAS
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Sábado | Hrs |
-|--------|-------|--------|-----------|--------|---------|--------|-----|
-| Paty | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 11:30-20:00 (B) | G1: 9:00-14:00 | 47 |
-| Karen | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Ceci Flores | 9:00-17:30 (A) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 9:00-17:30 (A) | G2: 9:00-14:00 | 47 |
-
-### CORTE / PEINADO / SECADO
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Sábado | Hrs |
-|--------|-------|--------|-----------|--------|---------|--------|-----|
-| Ceci Pacheco | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Ingrid | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 11:30-20:00 (B) | G2: 9:00-14:00 | 47 |
-
-### MASAJISTA / AYUDANTE
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Sábado | Hrs |
-|--------|-------|--------|-----------|--------|---------|--------|-----|
-| Isa San Martín | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Ube | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 9:00-17:30 (A) | G2: 9:00-14:00 | 47 |
-| Tamara | 9:00-17:30 (A) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | G2: 9:00-14:00 | 47 |
-
-### LAVAPELO Y SECADO
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Sábado | Hrs |
-|--------|-------|--------|-----------|--------|---------|--------|-----|
-| Carmencita | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Alma | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | G2: LIBRE | 47 |
-| Carolina | 9:00-17:30 (A) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Francis | 11:30-20:00 (B) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 11:30-20:00 (B) | G2: LIBRE | 47 |
-
-### RECEPCIÓN
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Sábado | Hrs |
-|--------|-------|--------|-----------|--------|---------|--------|-----|
-| **Antonio San Martín** | 9:00-17:30 (A) | 9:00-17:30 (A) | 9:00-17:30 (A) | 9:00-17:30 (A) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
-| Vale | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | G2: 9:00-14:00 | 47 |
-| Raquel | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | 9:00-17:30 (A) | 11:30-20:00 (B) | G2: LIBRE | 47 |
-| Fran Brocco | 11:30-20:00 (B) | 11:30-20:00 (B) | 11:30-20:00 (B) | 11:30-20:00 (B) | 11:30-20:00 (B) | LIBRE | 47 |
-
-### BACK OFFICE
-
-| Nombre | Lunes-Jueves | Viernes | Sábado | Hrs |
-|--------|-------------|---------|--------|-----|
-| Pamela Hernández | 9:00-17:30 (A) | 9:00-17:00 | G1: 9:00-14:00 | 47 |
+**Jueves y Viernes** son días peak y siguen la rotación fija de turnos, donde hay máxima dotación en la mañana.
 
 ---
 
-## Escenario 3: Lunes a Viernes (9:00–21:00)
+## Sábados — Equipo Reducido con Rotación Individual
 
-**Turnos:** A (9:00–18:00) | B (11:00–20:00) | C (12:00–21:00) | 47 hrs/semana (1 día extendido)
+En lugar de que un grupo completo trabaje cada sábado, se arma un **equipo mínimo** seleccionando **1 persona por área** mediante rotación:
 
-### COLORISTAS
+| Área | Quiénes rotan | Frecuencia individual |
+|---|---|---|
+| Coloristas | Marcela → María Paz → Paola → Daniel | Cada 4 semanas |
+| Aplicadoras | Patricia → Cecilia → Karen | Cada 3 semanas |
+| Ayudantes | Isabel → Tamara → Uberlinda → Carol | Cada 4 semanas |
+| Lavapelo | Eugenia → Carolina → Alma → Francis | Cada 4 semanas |
+| Recepción | Francisca → Valeria → Raquel | Cada 3 semanas |
+| Back Office | Pamela | Cada 2 semanas (alterno) |
+| Corte | Lorena | Cada 3 semanas (no todos) |
 
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Marcela | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 9:00-20:00 (A) | 47 |
-| Paola | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 12:00-21:00 (C) | 9:00-18:00 (A) | 47 |
-| María Paz | 11:00-20:00 (B) | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 47 |
-| Daniel | 10:30-19:30 (B) | 10:30-19:30 (B) | 10:30-19:30 (B) | 10:30-21:00 (C) | 10:30-19:30 (B) | 47 |
+**Resultado**: cada sábado trabajan entre 5 y 7 personas (dependiendo de si le toca a Pamela y/o Lorena esa semana).
 
-### APLICADORAS
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Paty | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 12:00-21:00 (C) | 47 |
-| Karen | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 9:00-18:00 (A) | 11:00-20:00 (B) | 47 |
-| Ceci Flores | 11:00-20:00 (B) | 11:00-20:00 (B) | 12:00-21:00 (C) | 9:00-18:00 (A) | 9:00-18:00 (A) | 47 |
-
-### CORTE / PEINADO / SECADO
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Ceci Pacheco | 12:00-21:00 (C) | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 47 |
-| Ingrid | 9:00-18:00 (A) | 11:00-20:00 (B) | 9:00-18:00 (A) | 12:00-21:00 (C) | 12:00-21:00 (C) | 47 |
-
-### MASAJISTA / AYUDANTE
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Isa San Martín | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 9:00-20:00 (A) | 47 |
-| Ube | 11:00-20:00 (B) | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 47 |
-| Tamara | 12:00-21:00 (C) | 11:00-20:00 (B) | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 47 |
-
-### LAVAPELO Y SECADO
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| Carmencita | 9:00-18:00 (A) | 11:00-20:00 (B) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 47 |
-| Alma | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 12:00-21:00 (C) | 9:00-18:00 (A) | 47 |
-| Carolina | 11:00-20:00 (B) | 12:00-21:00 (C) | 9:00-18:00 (A) | 11:00-20:00 (B) | 12:00-21:00 (C) | 47 |
-| Francis | 12:00-21:00 (C) | 12:00-21:00 (C) | 11:00-20:00 (B) | 12:00-21:00 (C) | 9:00-18:00 (A) | 47 |
-
-### RECEPCIÓN
-
-| Nombre | Lunes | Martes | Miércoles | Jueves | Viernes | Hrs |
-|--------|-------|--------|-----------|--------|---------|-----|
-| **Antonio San Martín** | 9:00-18:00 (A) | 9:00-18:00 (A) | 9:00-18:00 (A) | 9:00-18:00 (A) | 9:00-20:00 (A) | 47 |
-| Vale | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 47 |
-| Raquel | 11:00-20:00 (B) | 9:00-18:00 (A) | 12:00-21:00 (C) | 9:00-18:00 (A) | 12:00-21:00 (C) | 47 |
-| Fran Brocco | 12:00-21:00 (C) | 11:00-20:00 (B) | 11:00-20:00 (B) | 12:00-21:00 (C) | 11:00-20:00 (B) | 47 |
-
-### BACK OFFICE
-
-| Nombre | Lunes-Jueves | Viernes | Hrs |
-|--------|-------------|---------|-----|
-| Pamela Hernández | 9:00-18:00 (A) | 9:00-20:00 (A) | 47 |
+**Excluidos de sábados**: Antonio San Martín e Ingrid Higuera nunca trabajan sábado.
 
 ---
 
-## Escenario 4: Dotación Completa L-V 9:00–20:00 (con contrataciones)
+## Día Libre Post-Sábado
 
-**Objetivo:** Mantener la misma cantidad de personas en cada franja horaria que existe hoy, extendiendo a cierre 20:00.
+**Solo la persona que trabajó el sábado recibe un día libre** la semana siguiente (Lunes, Martes o Miércoles). El día se asigna según el área:
 
-**Turnos:** A (9:00–18:30) | B (10:30–20:00) | Personal actual en A + personal nuevo en B | 47 hrs/semana
+- Cada área tiene un día base (por ejemplo: coloristas parten en Lunes, aplicadoras en Martes, recepción en Miércoles).
+- Ese día base **rota cada semana**, de modo que no siempre cae en el mismo día.
+- Así se distribuyen los libres de forma pareja: aproximadamente 2–3 personas libres por día, en vez de 7–8 como sería con un grupo completo.
 
-### Resumen de Contrataciones
-
-| Área | Actual | Nuevos | Total | Sueldo Ref. Nuevo | Costo Mensual |
-|------|--------|--------|-------|-------------------|---------------|
-| Coloristas | 4 | 3 | 7 | $1.231.088 | $3.693.264 |
-| Aplicadoras | 3 | 3 | 6 | $1.533.265 | $4.599.795 |
-| Corte/Peinado | 2 | 2 | 4 | $860.405 | $1.720.810 |
-| Masajista/Ayudante | 3 | 3 | 6 | $808.173 | $2.424.519 |
-| Lavapelo y Secado | 4 | 4 | 8 | $789.159 | $3.156.636 |
-| Recepción | 4 | 3 | 7 | $1.246.698 | $3.740.094 |
-| Back Office | 1 | 0 | 1 | N/A | $0 |
-| **TOTAL** | **21** | **18** | **39** | | **$19.335.118** |
-
-### Impacto en Planilla
-
-| Concepto | Monto |
-|----------|-------|
-| Planilla actual (líquido mensual) | $29.086.407 |
-| Costo personal nuevo (mensual) | $19.335.118 |
-| **NUEVA PLANILLA TOTAL** | **$48.421.525** |
-| **Aumento porcentual** | **66,5%** |
-
-### Horarios Personal Actual + Nuevo
-
-**COLORISTAS** (4 actuales Turno A + 3 nuevos Turno B)
-- Marcela, Paola, María Paz → 9:00-18:30 (A)
-- Daniel → 10:30-20:00 (B) (restricción 10:30)
-- ★ Colorista Nuevo 1, 2, 3 → 10:30-20:00 (B)
-
-**APLICADORAS** (3 actuales Turno A + 3 nuevas Turno B)
-- Paty, Karen, Ceci Flores → 9:00-18:30 (A)
-- ★ Aplicadora Nueva 1, 2, 3 → 10:30-20:00 (B)
-
-**CORTE/PEINADO** (2 actuales rotan + 2 nuevos rotan)
-- Ceci Pacheco, Ingrid → alternan A/B
-- ★ Cortador/a Nuevo 1, 2 → alternan A/B (complementario)
-
-**MASAJISTA/AYUDANTE** (3 actuales Turno A + 3 nuevos Turno B)
-- Isa San Martín, Ube, Tamara → 9:00-18:30 (A)
-- ★ Masajista Nuevo 1, 2, 3 → 10:30-20:00 (B)
-
-**LAVAPELO Y SECADO** (4 actuales Turno A + 4 nuevos Turno B)
-- Carmencita, Alma, Carolina, Francis → 9:00-18:30 (A)
-- ★ Lavapelo Nuevo 1, 2, 3, 4 → 10:30-20:00 (B)
-
-**RECEPCIÓN** (4 actuales + 3 nuevos)
-- Antonio San Martín, Vale → 9:00-18:30 (A)
-- Raquel, Fran Brocco → 10:30-20:00 (B)
-- ★ Recepción Nueva 1, 2, 3 → alternan A/B
-
-**BACK OFFICE** (sin cambio)
-- Pamela Hernández → 9:00-18:30 (A)
-
-### Beneficio del solapamiento (10:30–18:30)
-- En el horario de solapamiento se DUPLICA la dotación
-- Cubre completamente el peak de lavado 12:00–16:00
-- Permite atender mayor volumen de clientes en horario prime
+**Quienes no trabajaron el sábado no reciben libre entre semana.** Esto es la principal ventaja del sistema: menos ausencias de Lunes a Viernes, especialmente en Jueves y Viernes (días peak).
 
 ---
 
-## Verificación de Restricciones — Todos los Escenarios
+## Restricciones Consideradas
 
-| Restricción | Esc.1 (L-V 20h) | Esc.2 (L-S 20h) | Esc.3 (L-V 21h) | Esc.4 (Dot.Completa) |
-|-------------|:---:|:---:|:---:|:---:|
-| 47 hrs semanales | ✅ | ✅ | ✅ | ✅ |
-| Peak lavado 12-16 | ✅ | ✅ | ✅ | ✅ (duplicado) |
-| Cierre: al menos 1 lavapelo | ✅ | ✅ | ✅ | ✅ |
-| Cierre: al menos 1 colorista | ✅ | ✅ | ✅ | ✅ |
-| Cierre: al menos 1 de corte | ✅ | ✅ | ✅ | ✅ |
-| Cierre: al menos 1 recepción | ✅ | ✅ | ✅ | ✅ |
-| Antonio SM a las 9:00 | ✅ | ✅ | ✅ | ✅ |
-| Daniel desde 10:30 | ✅ | ✅ | ✅ | ✅ |
-| Recepción 1 inicio + 1 cierre | ✅ | ✅ | ✅ | ✅ |
+### Dotación mínima en apertura (09:00)
+- **Coloristas**: mínimo 2 personas AM todos los días.
+- **Aplicadoras**: mínimo 1 aplicadora por cada 2 coloristas en AM.
+- **Ayudantes**: mínimo 2 presentes (idealmente 1 por cada colorista en AM).
+- **Lavapelo**: mínimo 2 presentes.
+- **Recepción**: mínimo 3 en apertura (Antonio + 2 de las rotativas).
+
+Si asignar un turno PM a alguien dejaría su área por debajo del mínimo de apertura, el sistema no le asigna PM ese día.
+
+### Dotación mínima en cierre (hasta 20:00)
+- Siempre al menos 2 coloristas PM (Daniel fijo + 1 rotativa).
+- Al menos 1 aplicadora PM, 1 corte PM, 1 ayudante PM.
+- Al menos 2 lavapelo PM.
+- Al menos 1 recepción PM.
+
+### Personas con horario especial
+- **Antonio San Martín**: siempre AM, sin sábados, sin libre.
+- **Ingrid Higuera**: rota AM/PM, sin sábados, sin libre.
+- **Daniel Olave**: siempre PM entre semana. Participa en rotación de sábados (09:00–14:00).
+- **Pamela Hernández**: siempre PM entre semana. Sábado cada 2 semanas.
+- **Francisca Brocco**: contrato Art. 22, rota turnos normalmente.
+
+### Equidad
+- La rotación de sábados es predecible: cada persona sabe con anticipación cuándo le toca.
+- Los días libres rotan semanalmente para que no siempre caigan el mismo día de la semana.
+- Los turnos PM rotan en ciclo de 3 semanas para que nadie cierre todos los días.
 
 ---
 
-## Archivos Generados
+## Resumen de Beneficios
 
-- `Horarios_Salon_Lazartigue.xlsx` — Excel con 5 hojas (4 escenarios + leyenda)
-- `Porfesionales salon y horarios.xlsx` — Datos originales del personal
+1. **Menos personas en sábado**: 5–7 en vez de 7–8. Menor costo operativo.
+2. **Más cobertura Lunes a Viernes**: solo 2–3 libres por día en vez de ~8. Especialmente importante en días peak (Jueves/Viernes).
+3. **Equidad en sábados**: cada persona trabaja según el tamaño de su pool (cada 3–4 semanas), no cada 3 semanas fijo para todos.
+4. **Predecibilidad**: toda la rotación es calculable. Cualquier persona puede saber su calendario con meses de anticipación.
