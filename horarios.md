@@ -1,4 +1,4 @@
-# Lazartigue — Sistema de Horarios V7.1
+# Lazartigue — Sistema de Horarios V7.2
 
 ## Modelo General
 
@@ -18,7 +18,7 @@
 | **Coloristas** | Marcela Carrion, María Paz Hodges, Paola Mella, Daniel Olave | Daniel siempre PM (10:30). Las otras 3 rotan AM/PM. |
 | **Aplicadoras** | Patricia Toledo, Cecilia Flores, Karen Leiva | Rotan AM/PM entre ellas. |
 | **Corte / Peinado** | Lorena Cecilia Pacheco, Ingrid Higuera | Rotan AM/PM entre ellas. |
-| **Ayudantes** | Isabel San Martín, Tamara Bustos, Uberlinda Urra, Carol Silva | Rotan AM/PM. 1 PM (Lun-Mié), 2 PM (Jue-Vie). |
+| **Ayudantes** | Isabel San Martín (titular), Carol Silva (titular), Tamara Bustos (apoyo), Uberlinda Urra (apoyo) | Rotan AM/PM. 1 PM (Lun-Mié), 2 PM (Jue-Vie). Nunca Tamara y Uberlinda solas en un turno; siempre al menos Isabel o Carol presente. |
 | **Lavapelo y Secado** | Eugenia Uribe, Carolina Madariaga, Alma Arévalo, Francis | Rotan AM/PM. 2 PM por día. |
 | **Recepción** | Antonio San Martín, Francisca Brocco, Valeria Otegui, Raquel Hasson | Antonio siempre AM. Las otras 3 rotan 1 PM por día. |
 | **Back Office** | Pamela Hernández | Siempre PM (10:30). |
@@ -72,7 +72,7 @@ En lugar de que un grupo completo trabaje cada sábado, se arma un **equipo mín
 ### Dotación mínima en apertura (09:00)
 - **Coloristas**: mínimo 2 personas AM todos los días.
 - **Aplicadoras**: mínimo 1 aplicadora por cada 2 coloristas en AM.
-- **Ayudantes**: mínimo 2 presentes (idealmente 1 por cada colorista en AM).
+- **Ayudantes**: mínimo 2 presentes (idealmente 1 por cada colorista en AM). En cada turno (AM y PM) debe haber al menos 1 titular (Isabel o Carol); Tamara y Uberlinda nunca pueden estar solas sin titular.
 - **Lavapelo**: mínimo 2 presentes.
 - **Recepción**: mínimo 3 en apertura (Antonio + 2 de las rotativas).
 
