@@ -26,6 +26,13 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
 .badge-current{background:#f0f0f0;color:#333;border:1px solid #e0e0e0}
 .badge-new{background:#111;color:#fff}
 
+.card-rules{width:100%;text-align:left;margin-top:4px}
+.card-rules ul{list-style:none;padding:0;margin:0}
+.card-rules li{font-size:11px;color:#666;padding:4px 0;border-bottom:1px solid #f0f0f0;display:flex;align-items:baseline;gap:6px;line-height:1.4}
+.card-rules li:last-child{border-bottom:none}
+.card-rules .icon-rule{font-size:10px;flex-shrink:0;width:14px;text-align:center}
+.card-section{font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-top:8px;margin-bottom:2px}
+
 .card-arrow{margin-top:8px;font-size:13px;font-weight:600;color:#999;transition:color .2s}
 .card:hover .card-arrow{color:#111}
 
@@ -50,14 +57,47 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
       <span class="card-badge badge-current">Actual</span>
       <span class="card-version">V7.3</span>
       <span class="card-label">Horarios vigentes</span>
-      <span class="card-desc">Versi&oacute;n actual en discusi&oacute;n.<br>Turnos 9.5h &middot; 46h/sem promedio</span>
+      <div class="card-rules">
+        <div class="card-section">Turnos</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> AM 09:00–18:30 / PM 10:30–20:00 (9.5h)</li>
+          <li><span class="icon-rule">&bull;</span> Rotaci&oacute;n AM/PM cada 3 semanas</li>
+        </ul>
+        <div class="card-section">Libre</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> D&iacute;a libre la semana <strong>siguiente</strong> al s&aacute;bado</li>
+        </ul>
+        <div class="card-section">En com&uacute;n con V8</div>
+        <ul>
+          <li><span class="icon-rule">&cir;</span> S&aacute;bados rotaci&oacute;n individual por &aacute;rea</li>
+          <li><span class="icon-rule">&cir;</span> Daniel y Pamela PM fijo / Antonio AM fijo</li>
+          <li><span class="icon-rule">&cir;</span> Ayudantes: titular siempre presente en PM</li>
+        </ul>
+      </div>
       <span class="card-arrow">Abrir &rarr;</span>
     </a>
     <a href="v8.html" class="card">
       <span class="card-badge badge-new">Nueva</span>
       <span class="card-version">V8.0</span>
       <span class="card-label">Propuesta nueva</span>
-      <span class="card-desc">Versi&oacute;n alternativa con cambios propuestos para evaluaci&oacute;n.</span>
+      <div class="card-rules">
+        <div class="card-section">Turnos</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> AM 09:00–18:20 / PM 10:40–20:00 (9h20)</li>
+          <li><span class="icon-rule">&bull;</span> Horario <strong>fijo</strong> por persona y d&iacute;a</li>
+        </ul>
+        <div class="card-section">Libre</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> D&iacute;a libre la <strong>misma</strong> semana del s&aacute;bado</li>
+          <li><span class="icon-rule">&bull;</span> Cumple 42h sin Art. 22 bis</li>
+        </ul>
+        <div class="card-section">En com&uacute;n con V7.3</div>
+        <ul>
+          <li><span class="icon-rule">&cir;</span> S&aacute;bados rotaci&oacute;n individual por &aacute;rea</li>
+          <li><span class="icon-rule">&cir;</span> Daniel y Pamela PM fijo / Antonio AM fijo</li>
+          <li><span class="icon-rule">&cir;</span> Ayudantes: titular siempre presente en PM</li>
+        </ul>
+      </div>
       <span class="card-arrow">Abrir &rarr;</span>
     </a>
   </div>
