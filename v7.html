@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lazartigue &mdash; Horarios V7.3</title>
+<style>
+:root{
+  --black:#111;--dark:#333;--mid:#666;--light:#999;--pale:#ccc;
+  --border:#e0e0e0;--bg:#fafafa;--card:#fff;
+  --am:#F5C542;--pm:#E74C3C;--sab:#3B82F6;
+  --am-bg:#f5f5f5;--pm-bg:#eaeaea;--sab-bg:#e0e0e0;--libre-bg:#f9f9f9;
+  --warn:#D4A017;--warn-bg:#FFF8E1;--warn-border:#F5D060;
+  --check:#333;--check-bg:#f0f0f0;
+  --radius:6px;--shadow:0 1px 3px rgba(0,0,0,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--black);line-height:1.5;font-size:13px}
+
+/* SVG icon helper */
+.icon{width:16px;height:16px;display:inline-block;vertical-align:middle;fill:currentColor;flex-shrink:0}
+.icon-sm{width:12px;height:12px}
+.icon-lg{width:20px;height:20px}
+
+.header{background:#fff;border-bottom:1px solid var(--border);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:18px;font-weight:700;letter-spacing:-.5px;color:var(--black)}
+.header .sub{font-size:11px;color:var(--mid);margin-top:2px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid var(--border);color:var(--dark);background:#fff}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+
+.nav{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;display:flex;position:sticky;top:0;z-index:100;overflow-x:auto}
+.nav-tab{padding:12px 20px;font-size:12px;font-weight:600;color:var(--light);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;user-select:none;white-space:nowrap}
+.nav-tab:hover{color:var(--dark)}
+.nav-tab.active{color:var(--black);border-bottom-color:var(--black)}
+
+.main{padding:24px 28px;max-width:1600px;margin:0 auto}
+.view{display:none}.view.active{display:block}
+
+.ctrl{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.ctrl label{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px}
+select{padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;background:#fff;color:var(--black);outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px}
+select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
+.btn{padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;transition:.15s;background:#fff;color:var(--dark)}
+.btn:hover{background:var(--bg);border-color:var(--dark)}
+.btn-p{background:var(--black);color:#fff;border-color:var(--black)}.btn-p:hover{background:var(--dark)}
+
+/* Month grid */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px}
+.cal-head{background:var(--black);color:#fff;padding:8px 4px;text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.cal-head.dom-h{background:var(--mid)}
+.cal-cell{background:#fff;padding:6px;min-height:80px;position:relative;transition:.1s}
+.cal-cell:hover:not(.empty):not(.dom){box-shadow:inset 0 0 0 2px var(--black);cursor:pointer}
+.cal-cell.empty{background:var(--bg)}
+.cal-cell.dom{background:var(--bg);opacity:.4}
+.cal-cell .day-num{font-size:11px;font-weight:700;color:var(--mid);margin-bottom:3px}
+.cal-cell .day-present{position:absolute;bottom:3px;right:5px;font-size:8px;font-weight:600;color:var(--light);line-height:1}
+.cal-cell.today .day-num{background:var(--black);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.cal-cell .shifts{display:flex;flex-direction:column;gap:1px}
+.cal-pill{font-size:8px;padding:2px 4px;border-radius:3px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;cursor:default;display:flex;align-items:center;gap:3px}
+.cal-pill .dot{width:5px;height:5px}
+.cal-pill.am{color:var(--dark)}
+.cal-pill.pm{color:var(--dark)}
+.cal-pill.sab{color:var(--dark)}
+.cal-pill.libre{color:var(--light);font-style:italic}
+.cal-cell .more{font-size:9px;color:var(--dark);font-weight:600;cursor:pointer;margin-top:1px}
+
+/* Week view */
+.week-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px}
+.week-table th{background:var(--black);color:#fff;padding:12px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;text-align:center}
+.week-table th:first-child{text-align:left;padding-left:14px;min-width:140px}
+.week-table th.peak-th{}
+.week-table td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--border);font-size:12px}
+.week-table tr:hover td{background:var(--bg)}
+.week-table td:first-child{text-align:left;font-weight:600;padding-left:14px;white-space:nowrap}
+.week-table td:last-child{font-weight:700;color:var(--black)}
+.area-row td{background:var(--bg)!important;font-weight:700!important;color:var(--black)!important;font-size:10px!important;text-transform:uppercase;letter-spacing:.8px;padding:10px 14px!important;text-align:left!important;border-bottom:1px solid var(--border)!important}
+.turno{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;min-width:95px}
+.turno-a{color:var(--dark)}
+.turno-b{color:var(--dark)}
+.turno-sab{color:var(--dark)}
+.turno-libre{color:var(--light);font-style:italic}
+.wk-content{margin-bottom:20px}
+.wk-head{display:flex;align-items:center;background:var(--black);color:#fff;border-radius:var(--radius) var(--radius) 0 0;padding:8px 10px;gap:0}
+.wk-head .wk-day-col{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;text-align:center}
+.wk-head .wk-day-col:not(.wk-sun):hover{opacity:.7}
+.wk-head .wk-sun{opacity:.4}
+.wk-name-col{min-width:170px;width:170px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.wk-day-col{flex:1;text-align:center;min-width:0}
+.wk-hrs-col{width:50px;text-align:center;flex-shrink:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.wk-cell{border-radius:3px;padding:4px 2px;margin:0 1px;display:flex;align-items:center;justify-content:center;gap:3px}
+.wk-cell.libre-bg{opacity:.5}
+.wk-time{font-size:10px;font-weight:500;white-space:nowrap}
+.dm-person .wk-name-col .dm-person-name{font-size:12px}
+.col-peak{}
+
+/* Person cards */
+.pcard{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.pcard-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--black);color:#fff}
+.pcard-h h3{font-size:14px;font-weight:700}
+.pcard-h .tags{display:flex;gap:6px}
+.pcard-h .tag{font-size:10px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;font-weight:500}
+.pcard-b{padding:16px}
+.pgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.dblock{border-radius:4px;padding:6px 3px;text-align:center;border:1px solid var(--border);min-height:56px}
+.dblock .dn{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--light)}
+.dblock .dd{font-size:9px;color:var(--mid);margin-bottom:1px}
+.dblock .dt{font-size:11px;font-weight:600}
+.dblock .dtu{font-size:8px;font-weight:500;margin-top:1px;color:var(--mid)}
+.dblock.am{background:var(--am-bg)}.dblock.am .dt{color:var(--dark)}
+.dblock.pm{background:var(--pm-bg)}.dblock.pm .dt{color:var(--dark)}
+.dblock.sab{background:var(--sab-bg)}.dblock.sab .dt{color:var(--dark)}
+.dblock.libre{background:var(--libre-bg)}.dblock.libre .dt{color:var(--light)}
+.dblock.dom{background:var(--bg);opacity:.4}.dblock.dom .dt{color:var(--light)}
+.dblock.peak-d{}
+.pstats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;align-items:center;flex:1;padding:8px 6px;background:var(--bg);border-radius:4px;min-width:55px;border:1px solid var(--border)}
+.stat-v{font-size:16px;font-weight:700;color:var(--black)}
+.stat-l{font-size:8px;color:var(--mid);text-transform:uppercase;font-weight:700;text-align:center;letter-spacing:.3px}
+
+/* Summary */
+.sum-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.sum-box h3{font-size:13px;font-weight:700;color:var(--black);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px}
+.sum-item{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;text-align:center}
+.sum-item .sv{font-size:16px;font-weight:700;color:var(--black)}
+.sum-item .sl{font-size:9px;color:var(--mid);font-weight:600}
+
+/* Day detail modal */
+.day-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.day-overlay.open{display:flex}
+.day-modal{background:#fff;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.15);width:100%;max-width:900px;overflow:hidden;animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.day-modal-head{background:var(--black);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.day-modal-head h2{font-size:16px;font-weight:700}
+.day-modal-head .dm-sub{font-size:11px;opacity:.7;margin-top:2px}
+.day-modal-head .dm-close{background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:6px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.day-modal-head .dm-close:hover{background:rgba(255,255,255,.25)}
+.day-modal-body{padding:20px 24px;max-height:calc(100vh - 180px);overflow-y:auto}
+.dm-section{margin-bottom:16px}
+.dm-section-title{font-size:11px;font-weight:700;color:var(--black);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dm-section-title .dm-count{background:var(--black);color:#fff;font-size:9px;padding:2px 7px;border-radius:3px;font-weight:600}
+.dm-person{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:4px;margin-bottom:3px;transition:.1s}
+.dm-person:hover{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.dm-person.am-bg{background:var(--am-bg)}
+.dm-person.pm-bg{background:var(--pm-bg)}
+.dm-person.sab-bg{background:var(--sab-bg)}
+.dm-person.libre-bg{background:var(--libre-bg)}
+.dm-person-info{display:flex;align-items:center;gap:8px}
+.dm-person-name{font-size:12px;font-weight:600}
+.dm-person-note{font-size:9px;color:var(--mid)}
+.dm-person-group{font-size:9px;font-weight:600;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;color:var(--mid)}
+.dm-person-shift{display:flex;align-items:center;gap:6px}
+.dm-shift-pill{padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600}
+.dm-shift-pill{display:inline-flex;align-items:center;gap:4px}
+.dm-shift-pill.am{background:var(--check-bg);color:var(--dark)}
+.dm-shift-pill.pm{background:var(--check-bg);color:var(--dark)}
+.dm-shift-pill.sab{background:var(--check-bg);color:var(--dark)}
+.dm-shift-pill.libre{background:var(--check-bg);color:var(--mid)}
+.dm-shift-time{font-size:11px;font-weight:500;color:var(--dark)}
+.dm-shift-hrs{font-size:11px;font-weight:700;color:var(--black)}
+
+.dm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:16px}
+.dm-stat{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;text-align:center}
+.dm-stat .ds-v{font-size:18px;font-weight:700;color:var(--black)}
+.dm-stat .ds-l{font-size:8px;color:var(--mid);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+
+.dm-coverage{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:16px}
+.dm-coverage h4{font-size:11px;font-weight:700;color:var(--black);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.dm-cov-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.dm-cov-row:last-child{border-bottom:none}
+.dm-cov-franja{font-weight:600;color:var(--dark);font-size:11px}
+.dm-cov-count{font-weight:700;font-size:13px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;margin-right:6px}
+.dm-cov-count.ok{background:var(--check-bg);color:var(--check)}
+.dm-cov-count.warn{background:var(--check-bg);color:var(--check)}
+.dm-cov-names{font-size:10px;color:var(--mid)}
+
+/* Hrs total table */
+.hrs-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px}
+.hrs-table th{background:var(--black);color:#fff;padding:8px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;text-align:left}
+.hrs-table th:not(:first-child){text-align:center}
+.hrs-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px}
+.hrs-table td:not(:first-child){text-align:center}
+.hrs-table tr:hover td{background:var(--bg)}
+.hrs-table .area-row td{background:var(--bg);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--black)}
+
+@media(max-width:768px){
+  .header{padding:14px 16px}.header h1{font-size:16px}
+  .nav{padding:0 8px}.nav-tab{padding:10px 12px;font-size:11px}
+  .main{padding:12px}
+  .cal-cell{min-height:50px;padding:3px}
+  .cal-pill{font-size:7px;padding:1px 3px}
+  .pgrid{grid-template-columns:repeat(4,1fr)}
+  .week-table th,.week-table td{padding:4px 3px;font-size:10px}
+  .turno{min-width:70px;font-size:9px;padding:2px 4px}
+  .wk-name-col{min-width:120px;width:120px}
+  .wk-time{font-size:8px}
+}
+@media print{
+  .nav,.ctrl,.badges{display:none!important}
+  .header{border-bottom:2px solid var(--black)}
+  .view{display:block!important;page-break-before:always}
+  body{background:#fff}
+  .cal-grid,.week-table,.pcard,.hrs-table{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- SVG sprite (hidden) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-week" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="i-bar-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+</svg>
+
+<div class="header">
+  <div>
+    <h1>Lazartigue &mdash; Horarios V7.3</h1>
+    <div class="sub">Proyecci&oacute;n Anual &middot; Turnos 9.5h &middot; S&aacute;bados con equipo reducido (rotaci&oacute;n individual por &aacute;rea) &middot; 46h/sem promedio</div>
+  </div>
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-weight:600;color:var(--dark);background:#fff;text-decoration:none;transition:.15s" onmouseover="this.style.background='var(--bg)';this.style.borderColor='var(--dark)'" onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)'">&larr; Selector de versiones</a>
+</div>
+
+<div class="nav" id="nav"></div>
+
+<div class="main">
+  <div id="view-month" class="view active"></div>
+  <div id="view-day" class="view"></div>
+  <div id="view-week" class="view"></div>
+  <div id="view-person" class="view"></div>
+  <div id="view-hours" class="view"></div>
+  <div id="view-team" class="view"></div>
+  <div id="view-rules" class="view"></div>
+</div>
+
+<!-- Day detail overlay -->
+<div class="day-overlay" id="day-overlay">
+  <div class="day-modal">
+    <div class="day-modal-head">
+      <div>
+        <h2 id="dm-title"></h2>
+        <div class="dm-sub" id="dm-sub"></div>
+      </div>
+      <button class="dm-close" id="dm-close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="day-modal-body" id="dm-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const START_YEAR = 2025;
+const START_MONTH = 3;
+const MONTHS_COUNT = 13;
+
+const DAYS_SHORT = ['Lun','Mar','Mi\u00e9','Jue','Vie','S\u00e1b','Dom'];
+const DAYS_FULL = ['Lunes','Martes','Mi\u00e9rcoles','Jueves','Viernes','S\u00e1bado','Domingo'];
+const MONTHS_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const PEAK_DOW = [3,4];
+
+// ============================================================
+// SHIFTS
+// ============================================================
+const A   = {time:'09:00-18:30',label:'AM',cls:'turno-a',dc:'am',h:9.5};
+const B   = {time:'10:30-20:00',label:'PM',cls:'turno-b',dc:'pm',h:9.5};
+const SAB = {time:'09:00-14:00',label:'S\u00e1b',cls:'turno-sab',dc:'sab',h:5};
+const LIB = {time:'LIBRE',label:'Libre',cls:'turno-libre',dc:'libre',h:0};
+const DOM = {time:'DOMINGO',label:'Dom',cls:'turno-libre',dc:'dom',h:0};
+
+const LEGEND_HTML = `<div class="badges" style="margin:8px 0 4px"><span class="badge"><span class="dot" style="background:var(--am)"></span> AM 09:00 – 18:30</span><span class="badge"><span class="dot" style="background:var(--pm)"></span> PM 10:30 – 20:00</span><span class="badge"><span class="dot" style="background:var(--sab)"></span> Sáb 09:00 – 14:00</span></div>`;
+
+// ============================================================
+// STAFF
+// ============================================================
+const staff = [
+  // G1 (8): Marcela, Paty, Ingrid, Isa, Antonio, Pamela, Fran Brocco, Carol
+  // G2 (7): Mar\u00eda Paz, Daniel, Ceci Flores, Ceci Pacheco, Tamara, Carolina, Vale
+  // G3 (7): Paola, Karen, Ube, Alma, Francis, Raquel, Carmencita
+  // Coloristas: Daniel PM fijo. Las otras 3 rotan 1 PM/d\u00eda Ma-Vi + Lu din\u00e1mico.
+  {name:'Marcela Carrion',area:'coloristas',areaLabel:'Coloristas',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Mar\u00eda Paz Hodges',area:'coloristas',areaLabel:'Coloristas',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Paola Mella',area:'coloristas',areaLabel:'Coloristas',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Daniel Olave',area:'coloristas',areaLabel:'Coloristas',group:2,base:[B,B,B,B,B],note:'PM fijo, entra 10:30'},
+
+  // Aplicadoras: 1 PM por d\u00eda Ma-Vi + Lu din\u00e1mico.
+  {name:'Patricia Toledo',area:'aplicadoras',areaLabel:'Aplicadoras',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Cecilia Flores',area:'aplicadoras',areaLabel:'Aplicadoras',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Karen Leiva',area:'aplicadoras',areaLabel:'Aplicadoras',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
+
+  // Corte: 1 PM por d\u00eda. 2 personas rotan Ma-Vi en ciclo de 3 sem, Lu din\u00e1mico.
+  {name:'Lorena Cecilia Pacheco',area:'corte',areaLabel:'Corte / Peinado',group:2,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Ingrid Higuera',area:'corte',areaLabel:'Corte / Peinado',group:1,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo, sin sábados ni libre'},
+
+  // Ayudantes: 4 personas. Isabel y Carol son TITULARES, Tamara y Ube son APOYO.
+  // Jue y Vie: 2 PM (siempre 1 titular + 1 apoyo en cada turno AM/PM).
+  // Mar y Mié: 1 PM. Lun: dinámico.
+  // Sem0: Ma=Tamara PM, Mi=Carol PM, Jue=Isabel+Tamara PM, Vie=Carol+Ube PM
+  // Sem1: Ma=Ube PM, Mi=Tamara PM, Jue=Carol+Ube PM, Vie=Isabel+Tamara PM
+  // Sem2: Ma=Isabel PM, Mi=Ube PM, Jue=Isabel+Tamara PM, Vie=Carol+Ube PM
+  {name:'Isabel San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,A,A,B,A],[A,A,A,A,B],[A,B,A,B,A]],mondayPM:true,note:'Titular, PM rotativo'},
+  {name:'Tamara Bustos',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,B,A,B,A],[A,A,B,A,B],[A,A,A,B,A]],mondayPM:true,note:'Apoyo, PM rotativo'},
+  {name:'Uberlinda Urra',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,A,B],[A,B,A,B,A],[A,A,B,A,B]],mondayPM:true,note:'Apoyo, PM rotativo'},
+  {name:'Carol Silva',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,A,B,A,B],[A,A,A,B,A],[A,A,A,A,B]],mondayPM:true,note:'Titular, PM rotativo'},
+
+  // Lavapelo: 2 PM por d\u00eda. 4 personas rotan Ma-Vi en ciclo de 3 sem, Lu din\u00e1mico (2 PM).
+  {name:'Eugenia del Carmen Uribe',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Carolina Madariaga',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:2,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
+  {name:'Alma Ar\u00e9valo',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Francis',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo'},
+
+  {name:'Antonio San Mart\u00edn',area:'recepcion',areaLabel:'Recepci\u00f3n',group:1,base:[A,A,A,A,A],note:'AM fijo, sin sábados ni libre'},
+  // Recepci\u00f3n rotativa: Francisca, Valeria y Raquel rotan 1 PM/día Ma-Vi + Lun dinámico. Siempre 2 AM + Antonio = 3 apertura.
+  {name:'Francisca Brocco',area:'recepcion',areaLabel:'Recepci\u00f3n',group:1,bases:[[A,B,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo, Art.22'},
+  {name:'Valeria Otegui',area:'recepcion',areaLabel:'Recepci\u00f3n',group:2,bases:[[A,A,B,A,A],[A,B,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
+  {name:'Raquel Hasson',area:'recepcion',areaLabel:'Recepci\u00f3n',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,B]],mondayPM:true,note:'PM rotativo'},
+
+  {name:'Pamela Hern\u00e1ndez',area:'backoffice',areaLabel:'Back Office',group:1,base:[B,B,B,B,B],note:'PM fijo'},
+];
+
+const areas = [
+  {key:'coloristas',label:'Coloristas'},
+  {key:'aplicadoras',label:'Aplicadoras'},
+  {key:'corte',label:'Corte / Peinado'},
+  {key:'ayudantes',label:'Masajista / Ayudante'},
+  {key:'lavapelo',label:'Lavapelo y Secado'},
+  {key:'recepcion',label:'Recepci\u00f3n'},
+  {key:'backoffice',label:'Back Office'},
+];
+
+// ============================================================
+// CALENDAR ENGINE
+// ============================================================
+function getRefSaturday() {
+  let d = new Date(2025, 3, 1);
+  while (d.getDay() !== 6) d.setDate(d.getDate() + 1);
+  return d;
+}
+const REF_SAT = getRefSaturday();
+
+function satGroup(date) {
+  const diffMs = date.getTime() - REF_SAT.getTime();
+  const diffWeeks = Math.round(diffMs / (7 * 86400000));
+  const mod = ((diffWeeks % 3) + 3) % 3;
+  return mod + 1;
+}
+
+// Cycle week index (0,1,2) based on ISO weeks from reference Monday
+function weekCycle(date) {
+  const refMon = new Date(2025, 3, 7); // Mon April 7 2025 (first Mon of schedule)
+  const mon = getMondayOfWeek(date);
+  const diffWeeks = Math.round((mon.getTime() - refMon.getTime()) / (7 * 86400000));
+  return ((diffWeeks % 3) + 3) % 3;
+}
+
+// How many rotative PM slots does each area need per day?
+// ayudantes PM: 1 Lun-Mié, 2 Jue-Vie (days peak)
+function getAreaPMNeeded(area, dow) {
+  if (area === 'ayudantes' && (dow === 3 || dow === 4)) return 2;
+  return {coloristas:1, aplicadoras:1, ayudantes:1, corte:1, lavapelo:2, recepcion:1}[area] || 1;
+}
+// Minimum AM (09:00) required per area on weekdays
+const areaMinAM = {coloristas:2, aplicadoras:2, ayudantes:2, corte:0, lavapelo:2, recepcion:2};
+
+// ============================================================
+// SATURDAY ROTATION — individual rotation per area (reduced team)
+// Each area has its own rotation pool. Only those who work Saturday get libre.
+// Antonio and Ingrid are excluded (no Saturdays, no libre).
+// ============================================================
+const noSatNames = ['Antonio San Mart\u00edn', 'Ingrid Higuera'];
+
+const satRotation = {
+  coloristas:  ['Marcela Carrion', 'Mar\u00eda Paz Hodges', 'Paola Mella', 'Daniel Olave'],
+  aplicadoras: ['Patricia Toledo', 'Cecilia Flores', 'Karen Leiva'],
+  ayudantes:   ['Isabel San Mart\u00edn', 'Tamara Bustos', 'Uberlinda Urra', 'Carol Silva'],
+  lavapelo:    ['Eugenia del Carmen Uribe', 'Carolina Madariaga', 'Alma Ar\u00e9valo', 'Francis'],
+  recepcion:   ['Francisca Brocco', 'Valeria Otegui', 'Raquel Hasson'],
+  backoffice:  ['Pamela Hern\u00e1ndez'],  // every 2 weeks
+  corte:       ['Lorena Cecilia Pacheco'],  // every 3 weeks
+};
+
+// Returns the name of the worker assigned to Saturday for a given area, or null
+function satWorkerForArea(area, satDate) {
+  const pool = satRotation[area];
+  if (!pool) return null;
+  const diffMs = satDate.getTime() - REF_SAT.getTime();
+  const diffWeeks = Math.round(diffMs / (7 * 86400000));
+  if (area === 'backoffice') return diffWeeks % 2 === 0 ? pool[0] : null;
+  if (area === 'corte') return diffWeeks % 3 === 0 ? pool[0] : null;
+  const idx = ((diffWeeks % pool.length) + pool.length) % pool.length;
+  return pool[idx];
+}
+
+// Check if a person works a given Saturday
+function workedSaturday(person, satDate) {
+  if (noSatNames.includes(person.name)) return false;
+  const worker = satWorkerForArea(person.area, satDate);
+  return person.name === worker;
+}
+
+// Libre day base per area: 0=Lun, 1=Mar, 2=Mié
+const areaLibreBase = {
+  coloristas: 0, aplicadoras: 1, ayudantes: 0,
+  lavapelo: 1, recepcion: 2, backoffice: 2, corte: 2,
+};
+
+// Returns 0(Lun), 1(Mar), 2(Mié) for the libre day of a person after a given Saturday
+// Returns -1 if the person didn't work that Saturday
+function getLibreDay(person, satDate) {
+  if (!workedSaturday(person, satDate)) return -1;
+  const diffMs = satDate.getTime() - REF_SAT.getTime();
+  const diffWeeks = Math.round(diffMs / (7 * 86400000));
+  const base = areaLibreBase[person.area];
+  if (base === undefined) return -1;
+  return ((base + diffWeeks) % 3 + 3) % 3;
+}
+
+// For dynamic PM on Lun/Mar/Mié: returns list of people who should do PM
+function dynamicPMList(area, date) {
+  const candidates = staff.filter(p => p.area === area && p.mondayPM);
+  if (!candidates.length) return [];
+  const dow = (date.getDay() + 6) % 7; // 0=Lun,1=Mar,2=Mié
+  const lastSat = new Date(date);
+  lastSat.setDate(lastSat.getDate() - (dow + 2)); // go back to previous Saturday
+
+  // Available = not on libre this day
+  const available = candidates.filter(p => getLibreDay(p, lastSat) !== dow);
+
+  // Check if the area's "fixed PM" person (like Daniel) has libre this day
+  const fixedPM = staff.find(p => p.area === area && p.base && p.base.every && p.base.every(s => s.dc === 'pm'));
+  const fixedHasLibre = fixedPM && getLibreDay(fixedPM, lastSat) === dow;
+
+  // Base needed + extra if fixed PM has libre
+  let needed = getAreaPMNeeded(area, dow);
+  if (fixedHasLibre) needed++;
+
+  // Cap PM assignments so we don't go below minimum AM for the area
+  const minAM = areaMinAM[area] || 0;
+  if (minAM > 0 && available.length - needed < minAM) {
+    needed = Math.max(0, available.length - minAM);
+  }
+
+  // Use absolute week number for fair rotation
+  const refMon = new Date(2025, 3, 7);
+  const mon = getMondayOfWeek(date);
+  const absWeek = Math.round((mon.getTime() - refMon.getTime()) / (7 * 86400000));
+
+  // Rotate starting position based on absolute week + dow for maximum fairness
+  const offset = (absWeek * 3 + dow) % (available.length || 1);
+  const rotated = [...available.slice(offset), ...available.slice(0, offset)];
+
+  let pmList = rotated.slice(0, needed).map(p => p.name);
+
+  // Ayudantes: garantizar al menos 1 titular (Isabel/Carol) en cada turno (AM y PM).
+  // Tamara y Uberlinda nunca deben estar solas sin titular.
+  if (area === 'ayudantes') {
+    const titulares = ['Isabel San Mart\u00edn', 'Carol Silva'];
+    const apoyo = ['Tamara Bustos', 'Uberlinda Urra'];
+    const pmHasTitular = pmList.some(n => titulares.includes(n));
+    const amNames = available.filter(p => !pmList.includes(p.name)).map(p => p.name);
+    const amHasTitular = amNames.some(n => titulares.includes(n));
+    // If PM has no titular but AM has one, swap an apoyo PM for a titular AM
+    if (!pmHasTitular && amHasTitular) {
+      const apoyoInPM = pmList.find(n => apoyo.includes(n));
+      const titularInAM = amNames.find(n => titulares.includes(n));
+      if (apoyoInPM && titularInAM) {
+        pmList = pmList.map(n => n === apoyoInPM ? titularInAM : n);
+      }
+    }
+    // If AM has no titular but PM has both, move one titular to AM
+    if (pmHasTitular && !amHasTitular && pmList.filter(n => titulares.includes(n)).length > 1) {
+      const titularInPM = pmList.find(n => titulares.includes(n));
+      const apoyoInAM = amNames.find(n => apoyo.includes(n));
+      if (titularInPM && apoyoInAM) {
+        pmList = pmList.map(n => n === titularInPM ? apoyoInAM : n);
+      }
+    }
+  }
+
+  return pmList;
+}
+
+function getShiftForDate(person, date) {
+  const dow = (date.getDay() + 6) % 7;
+  if (dow === 6) return DOM;
+  // Saturday: individual rotation per area
+  if (dow === 5) {
+    if (noSatNames.includes(person.name)) return LIB;
+    const worker = satWorkerForArea(person.area, date);
+    return person.name === worker ? SAB : LIB;
+  }
+  // Libre post-sábado: Lun(0), Mar(1), Mié(2) distribuido por subgrupos
+  if (dow >= 0 && dow <= 2) {
+    const lastSat = new Date(date);
+    lastSat.setDate(lastSat.getDate() - (dow + 2));
+    const libreDay = getLibreDay(person, lastSat);
+    if (libreDay === dow) return LIB;
+  }
+  if (person.bases) {
+    const wc = weekCycle(date);
+    const shift = person.bases[wc][dow];
+    // Dynamic PM assignment for Lun/Mar/Mié
+    if (dow >= 0 && dow <= 2 && person.mondayPM) {
+      const pmNames = dynamicPMList(person.area, date);
+      return pmNames.includes(person.name) ? B : A;
+    }
+    return shift;
+  }
+  return person.base[dow];
+}
+
+function getMondayOfWeek(d) {
+  const dt = new Date(d);
+  const dow = (dt.getDay() + 6) % 7;
+  dt.setDate(dt.getDate() - dow);
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+
+// Helper: compute total hours for a person in a date range
+function computeHoursInRange(person, startDate, endDate) {
+  let hrs = 0, days = 0, sats = 0, libres = 0;
+  const d = new Date(startDate);
+  while (d <= endDate) {
+    const s = getShiftForDate(person, d);
+    hrs += s.h;
+    if (s.h > 0 && s.dc !== 'dom') days++;
+    if (s.dc === 'sab') sats++;
+    if (s.dc === 'libre') libres++;
+    d.setDate(d.getDate() + 1);
+  }
+  return {hrs, days, sats, libres};
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const navEl = document.getElementById('nav');
+const tabs = [
+  {id:'month',label:'Mes',icon:'i-calendar'},
+  {id:'week',label:'Semana',icon:'i-week'},
+  {id:'day',label:'D\u00eda',icon:'i-clock'},
+  {id:'_sep'},
+  {id:'team',label:'Equipo',icon:'i-users'},
+  {id:'person',label:'Persona',icon:'i-users'},
+  {id:'hours',label:'Horas Total',icon:'i-bar-chart'},
+  {id:'rules',label:'Reglas',icon:'i-shield'},
+];
+tabs.forEach((t,i) => {
+  if (t.id === '_sep') {
+    const sep = document.createElement('div');
+    sep.style.cssText = 'width:1px;background:var(--border);margin:8px 8px;align-self:stretch';
+    navEl.appendChild(sep);
+    return;
+  }
+  const el = document.createElement('div');
+  el.className = 'nav-tab' + (i===0?' active':'');
+  el.dataset.view = t.id;
+  el.innerHTML = `<svg class="icon icon-sm" style="margin-right:4px"><use href="#${t.icon}"/></svg>${t.label}`;
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('view-'+t.id).classList.add('active');
+  });
+  navEl.appendChild(el);
+});
+
+// ============================================================
+// MONTH VIEW
+// ============================================================
+let curMonth = new Date().getMonth();
+let curYear = new Date().getFullYear();
+let monthFilter = 'all';
+let monthSearch = '';
+
+function buildMonthView() {
+  const container = document.getElementById('view-month');
+  container.innerHTML = '';
+
+  let ctrl = `<div class="ctrl">
+    <label>Mes</label>
+    <button class="btn" id="m-prev"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+    <span style="font-weight:700;font-size:14px;min-width:150px;text-align:center">${MONTHS_NAMES[curMonth]} ${curYear}</span>
+    <button class="btn" id="m-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+    <label style="margin-left:12px">&Aacute;rea</label>
+    <select id="m-area"><option value="all">Todas</option>${areas.map(a=>`<option value="${a.key}">${a.label}</option>`).join('')}</select>
+    <label>Persona</label>
+    <select id="m-person"><option value="all">Todo el equipo</option>${staff.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('')}</select>
+  </div>`;
+  container.innerHTML = ctrl + LEGEND_HTML;
+
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid';
+
+  DAYS_SHORT.forEach((d,i) => {
+    const h = document.createElement('div');
+    h.className = 'cal-head' + (i===6?' dom-h':'');
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const firstDay = new Date(curYear, curMonth, 1);
+  const startDow = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+  const today = new Date();
+
+  for (let i = 0; i < startDow; i++) {
+    const c = document.createElement('div');
+    c.className = 'cal-cell empty';
+    grid.appendChild(c);
+  }
+
+  const areaVal = monthFilter;
+  let filtered = staff;
+  if (areaVal !== 'all') filtered = staff.filter(s => s.area === areaVal);
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(curYear, curMonth, day);
+    const dow = (date.getDay() + 6) % 7;
+    const isToday = date.toDateString() === today.toDateString();
+    const isSun = dow === 6;
+    const isPeak = PEAK_DOW.includes(dow);
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell' + (isSun?' dom':'') + (isToday?' today':'');
+
+    const numEl = document.createElement('div');
+    numEl.className = 'day-num';
+    numEl.textContent = day;
+    cell.appendChild(numEl);
+
+    if (!isSun) {
+      const presentCount = staff.filter(p => { const s = getShiftForDate(p, date); return s.dc !== 'dom' && s.dc !== 'libre'; }).length;
+      const badge = document.createElement('div');
+      badge.className = 'day-present';
+      badge.textContent = `Dot: ${presentCount}`;
+      cell.appendChild(badge);
+      const shifts = document.createElement('div');
+      shifts.className = 'shifts';
+
+      let people = filtered;
+      if (monthSearch !== 'all' && monthSearch !== '') {
+        people = [staff[parseInt(monthSearch)]];
+      }
+
+      const MAX_SHOW = 5;
+      let count = 0;
+      people.forEach(p => {
+        const s = getShiftForDate(p, date);
+        if (s.dc === 'dom') return;
+        count++;
+        if (count <= MAX_SHOW) {
+          const pill = document.createElement('div');
+          pill.className = 'cal-pill ' + s.dc;
+          const dotColor = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : s.dc === 'sab' ? 'var(--sab)' : '';
+          pill.innerHTML = dotColor ? `<span class="dot" style="background:${dotColor}"></span>${p.name.split(' ')[0]} ${s.time}` : `${p.name.split(' ')[0]} ${s.time}`;
+          shifts.appendChild(pill);
+        }
+      });
+      if (count > MAX_SHOW) {
+        const more = document.createElement('div');
+        more.className = 'more';
+        more.textContent = `+${count - MAX_SHOW} m\u00e1s`;
+        shifts.appendChild(more);
+      }
+      cell.appendChild(shifts);
+      const clickDate = new Date(curYear, curMonth, day);
+      cell.addEventListener('click', () => openDayDetail(clickDate));
+    }
+
+    grid.appendChild(cell);
+  }
+
+  const lastDow = (new Date(curYear, curMonth, daysInMonth).getDay() + 6) % 7;
+  for (let i = lastDow + 1; i < 7; i++) {
+    const c = document.createElement('div');
+    c.className = 'cal-cell empty';
+    grid.appendChild(c);
+  }
+
+  container.appendChild(grid);
+
+  document.getElementById('m-prev').addEventListener('click', () => { curMonth--; if (curMonth < 0) { curMonth = 11; curYear--; } buildMonthView(); });
+  document.getElementById('m-next').addEventListener('click', () => { curMonth++; if (curMonth > 11) { curMonth = 0; curYear++; } buildMonthView(); });
+  document.getElementById('m-area').addEventListener('change', e => { monthFilter = e.target.value; document.getElementById('m-person').value = 'all'; monthSearch = 'all'; buildMonthView(); document.getElementById('m-area').value = monthFilter; });
+  document.getElementById('m-person').addEventListener('change', e => { monthSearch = e.target.value; if (monthSearch !== 'all') monthFilter = 'all'; buildMonthView(); document.getElementById('m-person').value = monthSearch; });
+  document.getElementById('m-area').value = monthFilter;
+  document.getElementById('m-person').value = monthSearch || 'all';
+}
+buildMonthView();
+
+// ============================================================
+// DAY VIEW
+// ============================================================
+let dayDate = new Date();
+// Skip to valid day (not Sunday)
+if (dayDate.getDay() === 0) dayDate.setDate(dayDate.getDate() + 1);
+
+function buildDayView() {
+  const container = document.getElementById('view-day');
+  container.innerHTML = '';
+
+  const dow = (dayDate.getDay() + 6) % 7;
+  if (dow === 6) { dayDate.setDate(dayDate.getDate() + 1); buildDayView(); return; }
+
+  const isPeak = PEAK_DOW.includes(dow);
+  const isSab = dow === 5;
+  const dayLabel = DAYS_FULL[dow];
+  const dateStr = `${dayDate.getDate()} de ${MONTHS_NAMES[dayDate.getMonth()]} ${dayDate.getFullYear()}`;
+
+  let subParts = [dateStr];
+  if (isPeak) subParts.push('DIA PEAK');
+  if (isSab) {
+    subParts.push('S\u00e1bado 09:00-14:00 \u2014 Equipo reducido (rotaci\u00f3n individual)');
+  } else if (dow >= 0 && dow <= 2) {
+    const lastSat = new Date(dayDate); lastSat.setDate(lastSat.getDate() - (dow + 2));
+    const dayNames = ['Lun','Mar','Mi\u00e9'];
+    const libresHoy = staff.filter(p => getLibreDay(p, lastSat) === dow).map(p => p.name.split(' ')[0]);
+    subParts.push(`Libres ${dayNames[dow]}: ${libresHoy.length > 0 ? libresHoy.join(', ') : 'ninguno'}`);
+  }
+
+  let ctrl = `<div class="ctrl">
+    <label>D\u00eda</label>
+    <button class="btn" id="d-prev"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+    <span style="font-weight:700;font-size:13px;min-width:220px;text-align:center">${dayLabel} ${dayDate.getDate()} ${MONTHS_NAMES[dayDate.getMonth()]} ${dayDate.getFullYear()}</span>
+    <button class="btn" id="d-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+    <button class="btn-p btn" id="d-today">Hoy</button>
+  </div>`;
+
+  if (isPeak || isSab || dow === 0) {
+    ctrl += `<div style="font-size:11px;color:var(--mid);margin-bottom:12px">${subParts.slice(1).join(' \u2014 ')}</div>`;
+  }
+
+  container.innerHTML = ctrl + LEGEND_HTML;
+
+  const content = document.createElement('div');
+
+  const byArea = {};
+  areas.forEach(a => { byArea[a.key] = { label: a.label, people: [] }; });
+  let totalAM = 0, totalPM = 0, totalSab = 0, totalLibre = 0, totalHrs = 0, totalPresent = 0;
+
+  staff.forEach(p => {
+    const s = getShiftForDate(p, dayDate);
+    if (s.dc === 'dom') return;
+    byArea[p.area].people.push({ name: p.name, group: p.group, note: p.note || '', shift: s });
+    if (s.dc === 'am') totalAM++;
+    else if (s.dc === 'pm') totalPM++;
+    else if (s.dc === 'sab') totalSab++;
+    else if (s.dc === 'libre') totalLibre++;
+    totalHrs += s.h;
+    if (s.h > 0) totalPresent++;
+  });
+
+  let html = '';
+
+  // Stats
+  html += '<div class="dm-stats">';
+  html += `<div class="dm-stat"><div class="ds-v">${totalPresent}</div><div class="ds-l">Presentes</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${isSab ? totalSab + totalAM : totalAM}</div><div class="ds-l">${isSab ? 'Presentes' : 'Turno AM'}</div></div>`;
+  if (!isSab) html += `<div class="dm-stat"><div class="ds-v">${totalPM}</div><div class="ds-l">Turno PM</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalLibre}</div><div class="ds-l">Libres</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalHrs}h</div><div class="ds-l">Hrs totales</div></div>`;
+  html += '</div>';
+
+  // Coverage
+  html += '<div class="dm-coverage"><h4><svg class="icon icon-sm"><use href="#i-shield"/></svg> Cobertura y Validaciones</h4>';
+  if (isSab) {
+    // Saturday: validate 1 per required area
+    const satAreas = ['coloristas','aplicadoras','ayudantes','lavapelo','recepcion'];
+    satAreas.forEach(aKey => {
+      const present = byArea[aKey].people.filter(p => p.shift.h > 0).length;
+      const aLabel = areas.find(a => a.key === aKey).label;
+      html += `<div class="dm-cov-row"><div class="dm-cov-franja">${aLabel}</div><span class="dm-cov-count ${present>=1?'ok':'warn'}">${present}</span></div>`;
+    });
+    const boPres = byArea['backoffice'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Back Office (alterno)</div><span class="dm-cov-count ok">${boPres}</span></div>`;
+    const cortePres = byArea['corte'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Corte (cada 3 sem)</div><span class="dm-cov-count ok">${cortePres}</span></div>`;
+  } else {
+    const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am');
+    const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colAM.length>=2?'ok':'warn'}">${colAM.length}</span></div>`;
+    const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplAM.length>=Math.ceil(colAM.length/2)?'ok':'warn'}">${aplAM.length}</span></div>`;
+    const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
+    const ayPresent = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresent.length>=2?'ok':'warn'}">${ayPresent.length}</span></div>`;
+    const ayPM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'pm');
+    const ayPMMin = (dow === 3 || dow === 4) ? 2 : 1;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes PM${(dow===3||dow===4)?' (peak: m\u00edn 2)':''}</div><span class="dm-cov-count ${ayPM.length>=ayPMMin?'ok':'warn'}">${ayPM.length}</span></div>`;
+    // Titular check: at least 1 titular in AM and 1 in PM
+    const titNames = ['Isabel San Mart\u00edn', 'Carol Silva'];
+    const ayAMTit = ayAM.filter(p => titNames.includes(p.name)).length;
+    const ayPMTit = ayPM.filter(p => titNames.includes(p.name)).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante AM</div><span class="dm-cov-count ${ayAMTit>=1?'ok':'warn'}">${ayAMTit}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante PM</div><span class="dm-cov-count ${ayPMTit>=1?'ok':'warn'}">${ayPMTit}</span></div>`;
+    const lavPresent = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresent.length>=2?'ok':'warn'}">${lavPresent.length}</span></div>`;
+    const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 3)</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
+    const recPM = byArea['recepcion'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n cierre</div><span class="dm-cov-count ${recPM.length>=1?'ok':'warn'}">${recPM.length}</span></div>`;
+    const lavPM = byArea['lavapelo'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo cierre</div><span class="dm-cov-count ${lavPM.length>=1?'ok':'warn'}">${lavPM.length}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Solapamiento 10:30\u201318:30</div><span class="dm-cov-count ok">${totalPresent}</span></div>`;
+  }
+  html += '</div>';
+
+  // Staff by area (only working people)
+  areas.forEach(a => {
+    const group = byArea[a.key];
+    const working = group.people.filter(p => p.shift.h > 0);
+    if (!working.length) return;
+
+    html += '<div class="dm-section">';
+    html += `<div class="dm-section-title"><span><span class="dm-count">${working.length}</span> ${a.label}</span></div>`;
+
+    working.forEach(pe => {
+      const s = pe.shift;
+      const bgCls = s.dc === 'am' ? 'am-bg' : s.dc === 'pm' ? 'pm-bg' : 'sab-bg';
+      const pDotColor = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : 'var(--sab)';
+      const pDotHtml = `<span class="dot" style="background:${pDotColor};width:6px;height:6px"></span>`;
+
+      html += `<div class="dm-person ${bgCls}">
+        <div class="dm-person-info">
+          ${pDotHtml}
+          <span class="dm-person-name">${pe.name}</span>
+          <span class="dm-person-group">G${pe.group}</span>
+          ${pe.note ? `<span class="dm-person-note">${pe.note}</span>` : ''}
+        </div>
+        <div class="dm-person-shift">
+          <span class="dm-shift-time">${s.time}</span>
+          <span class="dm-shift-pill ${s.dc}">${pDotHtml}${s.label}</span>
+          <span class="dm-shift-hrs">${s.h}h</span>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  content.innerHTML = html;
+  container.appendChild(content);
+
+  // Navigation
+  function stepDay(delta) {
+    dayDate.setDate(dayDate.getDate() + delta);
+    if (dayDate.getDay() === 0) dayDate.setDate(dayDate.getDate() + delta);
+    buildDayView();
+  }
+  document.getElementById('d-prev').addEventListener('click', () => stepDay(-1));
+  document.getElementById('d-next').addEventListener('click', () => stepDay(1));
+  document.getElementById('d-today').addEventListener('click', () => {
+    dayDate = new Date();
+    if (dayDate.getDay() === 0) dayDate.setDate(dayDate.getDate() + 1);
+    buildDayView();
+  });
+}
+buildDayView();
+
+// ============================================================
+// WEEK VIEW
+// ============================================================
+let weekStart = getMondayOfWeek(new Date());
+let weekArea = 'all';
+let weekPerson = 'all';
+
+function buildWeekView() {
+  const container = document.getElementById('view-week');
+  container.innerHTML = '';
+
+  const dates = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(weekStart); d.setDate(d.getDate() + i); dates.push(d); }
+  const satDate = dates[5];
+  const satWorkers = Object.keys(satRotation).map(area => satWorkerForArea(area, satDate)).filter(Boolean);
+  const satCount = satWorkers.length;
+
+  const wEnd = new Date(weekStart); wEnd.setDate(wEnd.getDate() + 6);
+  const wLabel = `${weekStart.getDate()} ${MONTHS_NAMES[weekStart.getMonth()]} \u2013 ${wEnd.getDate()} ${MONTHS_NAMES[wEnd.getMonth()]} ${wEnd.getFullYear()}`;
+
+  let ctrl = `<div class="ctrl">
+    <label>Semana</label>
+    <button class="btn" id="w-prev"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+    <span style="font-weight:700;font-size:13px;min-width:220px;text-align:center">${wLabel}</span>
+    <button class="btn" id="w-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+    <button class="btn-p btn" id="w-today">Hoy</button>
+    <label style="margin-left:12px">&Aacute;rea</label>
+    <select id="w-area"><option value="all">Todas</option>${areas.map(a=>`<option value="${a.key}">${a.label}</option>`).join('')}</select>
+    <label>Persona</label>
+    <select id="w-person"><option value="all">Todos</option>${staff.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('')}</select>
+  </div>`;
+
+  // Week stats (like day view dm-stats)
+  let wTotalAM=0, wTotalPM=0, wTotalLibre=0, wTotalHrs=0, wTotalPresent=0;
+  const wByArea = {};
+  areas.forEach(a => { wByArea[a.key] = 0; });
+  dates.slice(0,6).forEach(d => {
+    staff.forEach(p => {
+      const s = getShiftForDate(p, d);
+      if (s.dc === 'dom') return;
+      if (s.dc === 'am' || s.dc === 'sab') wTotalAM++;
+      if (s.dc === 'pm') wTotalPM++;
+      if (s.dc === 'libre') wTotalLibre++;
+      wTotalHrs += s.h;
+      if (s.h > 0) { wTotalPresent++; wByArea[p.area]++; }
+    });
+  });
+
+  ctrl += `<div class="dm-stats">
+    <div class="dm-stat"><div class="ds-v">${wTotalPresent}</div><div class="ds-l">Presentes (sem)</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalAM}</div><div class="ds-l">Turnos AM</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalPM}</div><div class="ds-l">Turnos PM</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalLibre}</div><div class="ds-l">Libres</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalHrs}h</div><div class="ds-l">Hrs totales</div></div>
+    <div class="dm-stat"><div class="ds-v">${satCount}</div><div class="ds-l">S\u00e1b ${satDate.getDate()}/${satDate.getMonth()+1}</div></div>
+  </div>`;
+
+  container.innerHTML = ctrl + LEGEND_HTML;
+
+  // Day headers row
+  let whtml = '<div class="wk-head"><div class="wk-name-col"></div>';
+  dates.forEach((d,i) => {
+    const dow = (d.getDay()+6)%7;
+    const isSun = dow === 6;
+    const label = `${DAYS_SHORT[dow]} ${d.getDate()}/${d.getMonth()+1}`;
+    const dot = !isSun ? staff.filter(p => { const s = getShiftForDate(p, d); return s.dc !== 'dom' && s.dc !== 'libre'; }).length : '';
+    const dotStr = dot !== '' ? `<div style="font-size:8px;font-weight:600;color:var(--light)">Dot: ${dot}</div>` : '';
+    whtml += `<div class="wk-day-col${isSun?' wk-sun':''}" data-dayidx="${i}">${label}${dotStr}</div>`;
+  });
+  whtml += '<div class="wk-hrs-col">Hrs</div></div>';
+
+  // Staff grouped by area
+  let filtered = staff;
+  if (weekPerson !== 'all') filtered = [staff[parseInt(weekPerson)]];
+  else if (weekArea !== 'all') filtered = staff.filter(s => s.area === weekArea);
+
+  let lastArea = '';
+  filtered.forEach(p => {
+    if (p.area !== lastArea && weekPerson === 'all') {
+      lastArea = p.area;
+      const areaCount = filtered.filter(s => s.area === p.area).length;
+      whtml += `<div class="dm-section-title" style="margin-top:12px"><span><span class="dm-count">${areaCount}</span> ${p.areaLabel}</span></div>`;
+    }
+
+    let hrs = 0;
+    let dayCells = '';
+    dates.forEach(d => {
+      const s = getShiftForDate(p, d);
+      hrs += s.h;
+      const tDot = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : s.dc === 'sab' ? 'var(--sab)' : '';
+      const tDotHtml = tDot ? `<span class="dot" style="background:${tDot};width:5px;height:5px"></span>` : '';
+      const cls = s.dc === 'am' ? 'am-bg' : s.dc === 'pm' ? 'pm-bg' : s.dc === 'sab' ? 'sab-bg' : s.dc === 'libre' ? 'libre-bg' : '';
+      dayCells += `<div class="wk-day-col wk-cell ${cls}">${s.dc==='dom'?'':`${tDotHtml}<span class="wk-time">${s.time}</span>`}</div>`;
+    });
+
+    const mainDot = 'var(--am)';
+    whtml += `<div class="dm-person" style="padding:5px 10px;gap:0">
+      <div class="wk-name-col">
+        <span class="dm-person-name">${p.name}</span>
+        <span class="dm-person-group">G${p.group}</span>
+      </div>
+      ${dayCells}
+      <div class="wk-hrs-col"><span class="dm-shift-hrs">${hrs}h</span></div>
+    </div>`;
+  });
+
+  const weekContent = document.createElement('div');
+  weekContent.className = 'wk-content';
+  weekContent.innerHTML = whtml;
+  container.appendChild(weekContent);
+
+  weekContent.querySelectorAll('.wk-head .wk-day-col:not(.wk-sun)').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => openDayDetail(new Date(dates[parseInt(el.dataset.dayidx)])));
+  });
+
+  document.getElementById('w-prev').addEventListener('click', () => { weekStart.setDate(weekStart.getDate() - 7); buildWeekView(); });
+  document.getElementById('w-next').addEventListener('click', () => { weekStart.setDate(weekStart.getDate() + 7); buildWeekView(); });
+  document.getElementById('w-today').addEventListener('click', () => { weekStart = getMondayOfWeek(new Date()); buildWeekView(); });
+  document.getElementById('w-area').addEventListener('change', e => { weekArea = e.target.value; weekPerson = 'all'; buildWeekView(); document.getElementById('w-area').value = weekArea; document.getElementById('w-person').value = 'all'; });
+  document.getElementById('w-person').addEventListener('change', e => { weekPerson = e.target.value; if (weekPerson !== 'all') weekArea = 'all'; buildWeekView(); document.getElementById('w-person').value = weekPerson; if (weekPerson !== 'all') document.getElementById('w-area').value = 'all'; });
+  document.getElementById('w-area').value = weekArea;
+  document.getElementById('w-person').value = weekPerson;
+}
+buildWeekView();
+
+// ============================================================
+// PERSON VIEW
+// ============================================================
+let personSel = 'all';
+let personArea = 'all';
+let personMonth = new Date().getMonth();
+let personYear = new Date().getFullYear();
+
+function buildPersonView() {
+  const container = document.getElementById('view-person');
+  container.innerHTML = '';
+
+  let ctrl = `<div class="ctrl">
+    <label>Persona</label>
+    <select id="p-person"><option value="all">Todos</option>${staff.map((p,i)=>`<option value="${i}">${p.name} (${p.areaLabel})</option>`).join('')}</select>
+    <label>&Aacute;rea</label>
+    <select id="p-area"><option value="all">Todas</option>${areas.map(a=>`<option value="${a.key}">${a.label}</option>`).join('')}</select>
+    <label style="margin-left:12px">Mes</label>
+    <button class="btn" id="p-prev"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+    <span id="p-mlabel" style="font-weight:700;font-size:13px;min-width:130px;text-align:center">${MONTHS_NAMES[personMonth]} ${personYear}</span>
+    <button class="btn" id="p-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+  </div>`;
+  container.innerHTML = ctrl + LEGEND_HTML;
+
+  let filtered = staff;
+  if (personSel !== 'all') filtered = [staff[parseInt(personSel)]];
+  else if (personArea !== 'all') filtered = staff.filter(s => s.area === personArea);
+
+  filtered.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pcard';
+
+    const firstOfMonth = new Date(personYear, personMonth, 1);
+    const lastOfMonth = new Date(personYear, personMonth + 1, 0);
+    let weekMonday = getMondayOfWeek(firstOfMonth);
+
+    let weeksHtml = '';
+    let monthHrs = 0, monthDays = 0, monthSats = 0, monthLibre = 0, weekCount = 0;
+
+    while (weekMonday <= lastOfMonth) {
+      weekCount++;
+      const dates = [];
+      for (let i = 0; i < 7; i++) { const d = new Date(weekMonday); d.setDate(d.getDate() + i); dates.push(d); }
+
+      let weekHrs = 0;
+      let dayBlocks = '';
+      dates.forEach((d,i) => {
+        const inMonth = d.getMonth() === personMonth && d.getFullYear() === personYear;
+        const s = getShiftForDate(p, d);
+        const dow = (d.getDay()+6)%7;
+        const isPeak = PEAK_DOW.includes(dow);
+
+        weekHrs += s.h;
+        if (inMonth) {
+          monthHrs += s.h;
+          if (s.h > 0 && s.dc !== 'dom') monthDays++;
+          if (s.dc === 'sab') monthSats++;
+          if (s.dc === 'libre') monthLibre++;
+        }
+
+        const dimCls = inMonth ? '' : ' style="opacity:.3"';
+        if (s.dc === 'dom') {
+          dayBlocks += `<div class="dblock dom"${dimCls}><div class="dn">Dom</div><div class="dd">${d.getDate()}</div><div class="dt">&mdash;</div></div>`;
+        } else if (s.dc === 'libre') {
+          dayBlocks += `<div class="dblock libre${isPeak?' peak-d':''}"${dimCls}><div class="dn">${DAYS_SHORT[dow]}</div><div class="dd">${d.getDate()}</div><div class="dt">LIBRE</div></div>`;
+        } else {
+          const [from,to] = s.time.split('-');
+          const bDot = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : 'var(--sab)';
+          dayBlocks += `<div class="dblock ${s.dc}${isPeak?' peak-d':''}"${dimCls}><div class="dn"><span class="dot" style="background:${bDot};width:5px;height:5px;vertical-align:middle;margin-right:2px"></span>${DAYS_SHORT[dow]}</div><div class="dd">${d.getDate()}</div><div class="dt">${from}</div><div class="dt" style="font-size:10px">${to}</div><div class="dtu">${s.h}h</div></div>`;
+        }
+      });
+
+      weeksHtml += `<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:600;color:var(--mid);margin-bottom:3px">Sem ${weekCount} &mdash; ${weekHrs}h</div><div class="pgrid">${dayBlocks}</div></div>`;
+      weekMonday.setDate(weekMonday.getDate() + 7);
+    }
+
+    card.innerHTML = `
+      <div class="pcard-h">
+        <div><h3>${p.name}</h3>${p.note?`<div style="font-size:10px;opacity:.7;margin-top:1px">${p.note}</div>`:''}</div>
+        <div class="tags"><span class="tag">${p.areaLabel}</span><span class="tag">G${p.group}</span></div>
+      </div>
+      <div class="pcard-b">
+        ${weeksHtml}
+        <div class="pstats">
+          <div class="stat"><span class="stat-v">${monthHrs}</span><span class="stat-l">Hrs mes</span></div>
+          <div class="stat"><span class="stat-v">${monthDays}</span><span class="stat-l">D\u00edas</span></div>
+          <div class="stat"><span class="stat-v">${monthSats}</span><span class="stat-l">S\u00e1bados</span></div>
+          <div class="stat"><span class="stat-v">${monthLibre}</span><span class="stat-l">Libres</span></div>
+          <div class="stat"><span class="stat-v">${monthDays > 0 ? (monthHrs/Math.ceil(monthDays/6)).toFixed(0) : 0}</span><span class="stat-l">Hrs/sem</span></div>
+          <div class="stat"><span class="stat-v">G${p.group}</span><span class="stat-l">Grupo</span></div>
+        </div>
+      </div>`;
+
+    monthHrs = 0; monthDays = 0; monthSats = 0; monthLibre = 0;
+    container.appendChild(card);
+  });
+
+  document.getElementById('p-person').addEventListener('change', e => { personSel = e.target.value; if (personSel !== 'all') personArea = 'all'; buildPersonView(); document.getElementById('p-person').value = personSel; });
+  document.getElementById('p-area').addEventListener('change', e => { personArea = e.target.value; personSel = 'all'; buildPersonView(); document.getElementById('p-area').value = personArea; });
+  document.getElementById('p-prev').addEventListener('click', () => { personMonth--; if (personMonth < 0) { personMonth = 11; personYear--; } buildPersonView(); });
+  document.getElementById('p-next').addEventListener('click', () => { personMonth++; if (personMonth > 11) { personMonth = 0; personYear++; } buildPersonView(); });
+  document.getElementById('p-person').value = personSel;
+  document.getElementById('p-area').value = personArea;
+}
+buildPersonView();
+
+// ============================================================
+// HOURS TOTAL VIEW — total hours per person for a date range
+// ============================================================
+let hrsMonth = new Date().getMonth();
+let hrsYear = new Date().getFullYear();
+let hrsRange = 'month'; // 'month' or 'year'
+
+function buildHoursView() {
+  const container = document.getElementById('view-hours');
+  container.innerHTML = '';
+
+  let ctrl = `<div class="ctrl">
+    <label>Rango</label>
+    <select id="h-range">
+      <option value="month"${hrsRange==='month'?' selected':''}>Mes</option>
+      <option value="year"${hrsRange==='year'?' selected':''}>A\u00f1o completo (Abr 2025 - Mar 2026)</option>
+    </select>
+    <label style="margin-left:12px">Mes</label>
+    <button class="btn" id="h-prev"><svg class="icon icon-sm"><use href="#i-chevron-left"/></svg></button>
+    <span id="h-mlabel" style="font-weight:700;font-size:13px;min-width:130px;text-align:center">${MONTHS_NAMES[hrsMonth]} ${hrsYear}</span>
+    <button class="btn" id="h-next"><svg class="icon icon-sm"><use href="#i-chevron-right"/></svg></button>
+  </div>`;
+  container.innerHTML = ctrl;
+
+  let startDate, endDate, rangeLabel;
+  if (hrsRange === 'year') {
+    startDate = new Date(2025, 3, 1); // April 1, 2025
+    endDate = new Date(2026, 2, 31);  // March 31, 2026
+    rangeLabel = 'Abril 2025 \u2013 Marzo 2026 (a\u00f1o completo)';
+  } else {
+    startDate = new Date(hrsYear, hrsMonth, 1);
+    endDate = new Date(hrsYear, hrsMonth + 1, 0);
+    rangeLabel = `${MONTHS_NAMES[hrsMonth]} ${hrsYear}`;
+  }
+
+  // Compute weeks in range for average
+  const totalDays = Math.round((endDate - startDate) / 86400000) + 1;
+  const totalWeeks = totalDays / 7;
+
+  const table = document.createElement('table');
+  table.className = 'hrs-table';
+  table.innerHTML = `<thead><tr>
+    <th>Nombre</th><th>Grupo</th><th>\u00c1rea</th>
+    <th>Hrs Totales</th><th>D\u00edas Trabajados</th><th>S\u00e1bados</th><th>Libres</th><th>Hrs/Sem Prom</th><th></th>
+  </tr></thead>`;
+
+  const tbody = document.createElement('tbody');
+  let lastArea = '';
+  let grandTotal = 0;
+
+  staff.forEach((p, idx) => {
+    if (p.area !== lastArea) {
+      lastArea = p.area;
+      const ar = document.createElement('tr');
+      ar.className = 'area-row';
+      ar.innerHTML = `<td colspan="9">${p.areaLabel}</td>`;
+      tbody.appendChild(ar);
+    }
+
+    const stats = computeHoursInRange(p, startDate, endDate);
+    const avgWeek = totalWeeks > 0 ? (stats.hrs / totalWeeks).toFixed(1) : 0;
+    grandTotal += stats.hrs;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:600">${p.name}</td>
+      <td>G${p.group}</td>
+      <td style="font-size:11px;color:var(--mid)">${p.areaLabel}</td>
+      <td style="font-weight:700">${stats.hrs}h</td>
+      <td>${stats.days}</td>
+      <td>${stats.sats}</td>
+      <td>${stats.libres}</td>
+      <td style="font-weight:700">${avgWeek}h</td>
+      <td><a href="#" class="hrs-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver horario</a></td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Total row
+  const totalRow = document.createElement('tr');
+  totalRow.innerHTML = `<td colspan="3" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td><td style="font-weight:700">${grandTotal}h</td><td colspan="5"></td>`;
+  totalRow.style.borderTop = '2px solid var(--black)';
+  tbody.appendChild(totalRow);
+
+  table.appendChild(tbody);
+
+  // Summary
+  const summary = document.createElement('div');
+  summary.className = 'sum-box';
+  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel}</h3>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sv">${grandTotal}</div><div class="sl">Hrs equipo</div></div>
+      <div class="sum-item"><div class="sv">${staff.length}</div><div class="sl">Personas</div></div>
+      <div class="sum-item"><div class="sv">${(grandTotal / staff.length).toFixed(0)}</div><div class="sl">Hrs/persona</div></div>
+      <div class="sum-item"><div class="sv">${totalWeeks > 0 ? (grandTotal / staff.length / totalWeeks).toFixed(1) : 0}</div><div class="sl">Hrs/sem prom</div></div>
+    </div>`;
+  container.appendChild(summary);
+  container.appendChild(table);
+
+  // Events
+  document.getElementById('h-range').addEventListener('change', e => { hrsRange = e.target.value; buildHoursView(); });
+  document.getElementById('h-prev').addEventListener('click', () => { hrsMonth--; if (hrsMonth < 0) { hrsMonth = 11; hrsYear--; } buildHoursView(); });
+  document.getElementById('h-next').addEventListener('click', () => { hrsMonth++; if (hrsMonth > 11) { hrsMonth = 0; hrsYear++; } buildHoursView(); });
+
+  container.querySelectorAll('.hrs-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const idx = e.target.dataset.idx;
+      personSel = idx;
+      personArea = 'all';
+      buildPersonView();
+      document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      const personTab = document.querySelector('[data-view="person"]');
+      personTab.classList.add('active');
+      document.getElementById('view-person').classList.add('active');
+    });
+  });
+}
+buildHoursView();
+
+// ============================================================
+// TEAM VIEW
+// ============================================================
+function buildTeamView() {
+  const container = document.getElementById('view-team');
+  let html = '<h3 style="margin-bottom:16px;font-size:15px;font-weight:700">Equipo Lazartigue</h3>';
+
+  html += '<table class="week-table"><thead><tr><th>Nombre completo</th><th>\u00c1rea</th><th>Grupo</th><th>Nota</th><th>Horario</th></tr></thead><tbody>';
+
+  let lastArea = '';
+  staff.forEach((p, idx) => {
+    if (p.area !== lastArea) {
+      lastArea = p.area;
+      html += `<tr class="area-row"><td colspan="5">${p.areaLabel}</td></tr>`;
+    }
+    html += `<tr>`;
+    html += `<td style="font-weight:600">${p.name}</td>`;
+    html += `<td>${p.areaLabel}</td>`;
+    html += `<td>G${p.group}</td>`;
+    html += `<td style="font-size:11px;color:var(--mid)">${p.note || ''}</td>`;
+    html += `<td><a href="#" class="team-link" data-idx="${idx}" style="color:var(--black);text-decoration:underline;font-size:11px;font-weight:600">Ver horario</a></td>`;
+    html += `</tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('.team-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const idx = e.target.dataset.idx;
+      personSel = idx;
+      personArea = 'all';
+      buildPersonView();
+      // Switch to person tab
+      document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+      const personTab = document.querySelector('[data-view="person"]');
+      personTab.classList.add('active');
+      document.getElementById('view-person').classList.add('active');
+    });
+  });
+}
+buildTeamView();
+
+// ============================================================
+// RULES VIEW
+// ============================================================
+(function buildRulesView() {
+  const container = document.getElementById('view-rules');
+  container.innerHTML = `<h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px"><svg class="icon"><use href="#i-shield"/></svg> Restricciones y Reglas V7 — Equipo Reducido S\u00e1bados</h2>
+    <p style="font-size:11px;color:var(--mid);margin-bottom:16px">Turnos uniformes de 9.5h con rotaci\u00f3n individual por \u00e1rea para s\u00e1bados.</p>
+    <div class="sum-box"><h3><svg class="icon icon-sm"><use href="#i-info"/></svg> Resumen del Modelo</h3><div class="sum-grid">
+      <div class="sum-item"><div class="sv">9.5h</div><div class="sl">AM 09:00-18:30</div></div>
+      <div class="sum-item"><div class="sv">9.5h</div><div class="sl">PM 10:30-20:00</div></div>
+      <div class="sum-item"><div class="sv">5h</div><div class="sl">S\u00e1bado 09-14</div></div>
+      <div class="sum-item"><div class="sv">~5-7</div><div class="sl">Personas/s\u00e1b</div></div>
+      <div class="sum-item"><div class="sv">Individual</div><div class="sl">Rotaci\u00f3n S\u00e1b</div></div>
+      <div class="sum-item"><div class="sv">21</div><div class="sl">Personal activo</div></div>
+    </div></div>`;
+
+  const rules = [
+    {t:'Turnos uniformes 9.5h',d:'AM: 09:00\u201318:30 (9.5h). PM: 10:30\u201320:00 (9.5h). S\u00e1bado: 09:00\u201314:00 (5h). Daniel entra 10:30 (PM est\u00e1ndar).',ok:true},
+    {t:'S\u00e1bados con equipo reducido',d:'Rotaci\u00f3n individual por \u00e1rea. Cada s\u00e1bado trabaja 1 persona por \u00e1rea: 1 colorista (cada 4 sem), 1 aplicadora (cada 3 sem), 1 ayudante (cada 4 sem), 1 lavapelo (cada 4 sem), 1 recepci\u00f3n (cada 3 sem). Total ~5\u20137 personas.',ok:true},
+    {t:'Pamela: s\u00e1bado alterno',d:'Pamela Hern\u00e1ndez trabaja s\u00e1bado cada 2 semanas (semanas pares desde referencia).',ok:true},
+    {t:'Lorena: s\u00e1bado cada 3 sem',d:'Lorena Cecilia Pacheco trabaja s\u00e1bado cada 3 semanas.',ok:true},
+    {t:'Libre post-s\u00e1bado: solo quien trabaj\u00f3',d:'Solo quienes trabajaron el s\u00e1bado reciben libre Lun/Mar/Mi\u00e9. Cada \u00e1rea tiene un d\u00eda base que rota semanalmente: (base + semana) % 3. Menos libres entre semana = m\u00e1s cobertura Lun-Vie.',ok:true},
+    {t:'Antonio e Ingrid sin s\u00e1bados ni libre',d:'Antonio San Mart\u00edn e Ingrid Higuera no trabajan s\u00e1bados (siempre LIB) y no participan del sistema de libre post-s\u00e1bado.',ok:true},
+    {t:'Pamela Hern\u00e1ndez siempre PM',d:'Pamela tiene turno PM fijo (10:30\u201320:00) todos los d\u00edas de semana.',ok:true},
+    {t:'Daniel participa en rotaci\u00f3n s\u00e1bados',d:'Daniel Olave rota en el pool de coloristas para s\u00e1bados (09:00\u201314:00). PM fijo durante la semana.',ok:true},
+    {t:'M\u00e1s cobertura Lun-Vie',d:'Al reducir los s\u00e1bados de grupo completo a equipo m\u00ednimo, hay menos libres entre semana (~2\u20133/d\u00eda en vez de ~7\u20138). Ganancia en cobertura especialmente Jue/Vie peak.',ok:true},
+    {t:'Min. 2 coloristas apertura y cierre',d:'Siempre 2 AM + 2 PM. Daniel Olave PM fijo. Marcela, Mar\u00eda Paz y Paola rotan el segundo PM.',ok:true},
+    {t:'1 aplicador / 2 coloristas',d:'3 aplicadoras para 4 coloristas. Patricia, Cecilia y Karen rotan PM. Siempre \u2265 1:2.',ok:true},
+    {t:'Recepci\u00f3n: 3 en apertura',d:'Antonio AM fijo + Francisca, Valeria y Raquel rotan 1 PM/d\u00eda (siempre 2 AM). Total apertura: 3.',ok:true},
+    {t:'Peak Jueves y Viernes',d:'M\u00e1xima dotaci\u00f3n en ma\u00f1ana de peak. 3 coloristas + 2 aplicadoras + 2 ayudantes en apertura. 2 ayudantes PM en Jue/Vie.',ok:true},
+    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM + 1 corte PM + 2 lavapelo PM. Ayudantes: 1 PM (Lun-Mi\u00e9), 2 PM (Jue-Vie). Nadie cierra todos los d\u00edas.',ok:true},
+    {t:'Ayudantes: titulares y apoyo',d:'Isabel San Mart\u00edn y Carol Silva son titulares. Tamara Bustos y Uberlinda Urra son apoyo. En cada turno (AM y PM) siempre hay al menos 1 titular presente.',ok:true},
+    {t:'Rotaci\u00f3n s\u00e1bados por \u00e1rea',d:'Coloristas: Marcela, M\u00aa Paz, Paola, Daniel (c/4 sem). Aplicadoras: Patricia, Cecilia, Karen (c/3). Ayudantes: Isabel, Tamara, Ube, Carol (c/4). Lavapelo: Eugenia, Carolina, Alma, Francis (c/4). Recepci\u00f3n: Francisca, Valeria, Raquel (c/3).',ok:true},
+  ];
+
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px';
+  rules.forEach(r => {
+    const c = document.createElement('div');
+    const borderColor = r.ok ? 'var(--black)' : 'var(--warn)';
+    const iconId = r.ok ? 'i-check' : 'i-alert';
+    const iconColor = r.ok ? 'var(--black)' : 'var(--warn)';
+    c.style.cssText = `background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px`;
+    c.innerHTML = `<h4 style="font-size:12px;font-weight:700;color:${iconColor};margin-bottom:3px;display:flex;align-items:center;gap:4px"><svg class="icon icon-sm" style="color:${iconColor}"><use href="#${iconId}"/></svg> ${r.t}</h4><p style="font-size:11px;color:var(--mid);line-height:1.5">${r.d}</p>`;
+    grid.appendChild(c);
+  });
+  container.appendChild(grid);
+})();
+
+// ============================================================
+// DAY DETAIL MODAL
+// ============================================================
+const overlay = document.getElementById('day-overlay');
+const dmTitle = document.getElementById('dm-title');
+const dmSub = document.getElementById('dm-sub');
+const dmBody = document.getElementById('dm-body');
+
+document.getElementById('dm-close').addEventListener('click', closeDayModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeDayModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDayModal(); });
+
+function closeDayModal() { overlay.classList.remove('open'); }
+
+function openDayDetail(date) {
+  const dow = (date.getDay() + 6) % 7;
+  if (dow === 6) return;
+
+  const isPeak = PEAK_DOW.includes(dow);
+  const isSab = dow === 5;
+  const dayLabel = DAYS_FULL[dow];
+  const dateStr = `${date.getDate()} de ${MONTHS_NAMES[date.getMonth()]} ${date.getFullYear()}`;
+
+  dmTitle.textContent = `${dayLabel} ${date.getDate()}`;
+  let subText = dateStr;
+  if (isPeak) subText += ' \u2014 DIA PEAK';
+  if (isSab) {
+    subText += ' \u2014 S\u00e1bado 09:00-14:00 \u2014 Equipo reducido (rotaci\u00f3n individual)';
+  } else if (dow >= 0 && dow <= 2) {
+    const lastSat = new Date(date); lastSat.setDate(lastSat.getDate() - (dow + 2));
+    const dayNames = ['Lun','Mar','Mi\u00e9'];
+    const libresHoy = staff.filter(p => getLibreDay(p, lastSat) === dow).map(p => p.name.split(' ')[0]);
+    subText += ` \u2014 Libres ${dayNames[dow]}: ${libresHoy.length > 0 ? libresHoy.join(', ') : 'ninguno'}`;
+  }
+  dmSub.textContent = subText;
+
+  const byArea = {};
+  areas.forEach(a => { byArea[a.key] = { label: a.label, people: [] }; });
+
+  let totalAM = 0, totalPM = 0, totalSab = 0, totalLibre = 0, totalHrs = 0, totalPresent = 0;
+
+  staff.forEach(p => {
+    const s = getShiftForDate(p, date);
+    if (s.dc === 'dom') return;
+    byArea[p.area].people.push({ name: p.name, group: p.group, note: p.note || '', shift: s });
+    if (s.dc === 'am') totalAM++;
+    else if (s.dc === 'pm') totalPM++;
+    else if (s.dc === 'sab') totalSab++;
+    else if (s.dc === 'libre') totalLibre++;
+    totalHrs += s.h;
+    if (s.h > 0) totalPresent++;
+  });
+
+  let html = '';
+
+  html += '<div class="dm-stats">';
+  html += `<div class="dm-stat"><div class="ds-v">${totalPresent}</div><div class="ds-l">Presentes</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${isSab ? totalSab + totalAM : totalAM}</div><div class="ds-l">${isSab ? 'Presentes' : 'Turno AM'}</div></div>`;
+  if (!isSab) html += `<div class="dm-stat"><div class="ds-v">${totalPM}</div><div class="ds-l">Turno PM</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalLibre}</div><div class="ds-l">Libres</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalHrs}h</div><div class="ds-l">Hrs totales</div></div>`;
+  html += '</div>';
+
+  // Coverage
+  html += '<div class="dm-coverage"><h4><svg class="icon icon-sm"><use href="#i-shield"/></svg> Cobertura y Validaciones</h4>';
+
+  if (isSab) {
+    const satAreaKeys = ['coloristas','aplicadoras','ayudantes','lavapelo','recepcion'];
+    satAreaKeys.forEach(aKey => {
+      const present = byArea[aKey].people.filter(p => p.shift.h > 0).length;
+      const aLabel = areas.find(a => a.key === aKey).label;
+      html += `<div class="dm-cov-row"><div class="dm-cov-franja">${aLabel}</div><span class="dm-cov-count ${present>=1?'ok':'warn'}">${present}</span></div>`;
+    });
+    const boPres = byArea['backoffice'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Back Office (alterno)</div><span class="dm-cov-count ok">${boPres}</span></div>`;
+    const cortePres = byArea['corte'].people.filter(p => p.shift.h > 0).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Corte (cada 3 sem)</div><span class="dm-cov-count ok">${cortePres}</span></div>`;
+  } else {
+    const colAM = byArea['coloristas'].people.filter(p => p.shift.dc === 'am');
+    const colPM = byArea['coloristas'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas apertura</div><span class="dm-cov-count ${colAM.length>=2?'ok':'warn'}">${colAM.length}</span></div>`;
+
+    const aplAM = byArea['aplicadoras'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Aplicadoras apertura</div><span class="dm-cov-count ${aplAM.length>=Math.ceil(colAM.length/2)?'ok':'warn'}">${aplAM.length}</span></div>`;
+
+    const ayAM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
+    const ayPresentM = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresentM.length>=2?'ok':'warn'}">${ayPresentM.length}</span></div>`;
+    const ayPMm = byArea['ayudantes'].people.filter(p => p.shift.dc === 'pm');
+    const ayPMMinM = (dow === 3 || dow === 4) ? 2 : 1;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes PM${(dow===3||dow===4)?' (peak: m\u00edn 2)':''}</div><span class="dm-cov-count ${ayPMm.length>=ayPMMinM?'ok':'warn'}">${ayPMm.length}</span></div>`;
+    const titNamesM = ['Isabel San Mart\u00edn', 'Carol Silva'];
+    const ayAMTitM = ayAM.filter(p => titNamesM.includes(p.name)).length;
+    const ayPMTitM = ayPMm.filter(p => titNamesM.includes(p.name)).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante AM</div><span class="dm-cov-count ${ayAMTitM>=1?'ok':'warn'}">${ayAMTitM}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante PM</div><span class="dm-cov-count ${ayPMTitM>=1?'ok':'warn'}">${ayPMTitM}</span></div>`;
+    const lavPresentM = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresentM.length>=2?'ok':'warn'}">${lavPresentM.length}</span></div>`;
+
+    const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n apertura (m\u00edn 3)</div><span class="dm-cov-count ${recAM.length>=3?'ok':'warn'}">${recAM.length}</span></div>`;
+
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Coloristas cierre</div><span class="dm-cov-count ${colPM.length>=2?'ok':'warn'}">${colPM.length}</span></div>`;
+    const recPM = byArea['recepcion'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Recepci\u00f3n cierre</div><span class="dm-cov-count ${recPM.length>=1?'ok':'warn'}">${recPM.length}</span></div>`;
+    const lavPM = byArea['lavapelo'].people.filter(p => p.shift.dc === 'pm');
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo cierre</div><span class="dm-cov-count ${lavPM.length>=1?'ok':'warn'}">${lavPM.length}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Solapamiento 10:30\u201318:30</div><span class="dm-cov-count ok">${totalPresent}</span></div>`;
+  }
+  html += '</div>';
+
+  // Staff by area
+  areas.forEach(a => {
+    const group = byArea[a.key];
+    if (!group.people.length) return;
+    const present = group.people.filter(p => p.shift.h > 0).length;
+    const libre = group.people.filter(p => p.shift.dc === 'libre').length;
+
+    html += '<div class="dm-section">';
+    html += `<div class="dm-section-title"><span><span class="dm-count">${present}</span>${libre ? ` <span class="dm-count" style="background:var(--mid)">${libre} libre</span>` : ''} ${a.label}</span></div>`;
+
+    group.people.forEach(pe => {
+      const s = pe.shift;
+      const bgCls = s.dc === 'am' ? 'am-bg' : s.dc === 'pm' ? 'pm-bg' : s.dc === 'sab' ? 'sab-bg' : 'libre-bg';
+      const pillCls = s.dc === 'am' ? 'am' : s.dc === 'pm' ? 'pm' : s.dc === 'sab' ? 'sab' : 'libre';
+      const pillLabel = s.dc === 'libre' ? 'LIBRE' : s.label;
+      const timeLabel = s.dc === 'libre' ? '' : s.time;
+      const hrsLabel = s.h > 0 ? `${s.h}h` : '';
+      const pDotColor = s.dc === 'am' ? 'var(--am)' : s.dc === 'pm' ? 'var(--pm)' : s.dc === 'sab' ? 'var(--sab)' : '';
+      const pDotHtml = pDotColor ? `<span class="dot" style="background:${pDotColor};width:6px;height:6px"></span>` : '';
+
+      html += `<div class="dm-person ${bgCls}">
+        <div class="dm-person-info">
+          ${pDotHtml}
+          <span class="dm-person-name">${pe.name}</span>
+          <span class="dm-person-group">G${pe.group}</span>
+          ${pe.note ? `<span class="dm-person-note">${pe.note}</span>` : ''}
+        </div>
+        <div class="dm-person-shift">
+          <span class="dm-shift-time">${timeLabel}</span>
+          <span class="dm-shift-pill ${pillCls}">${pDotHtml}${pillLabel}</span>
+          <span class="dm-shift-hrs">${hrsLabel}</span>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  dmBody.innerHTML = html;
+  overlay.classList.add('open');
+}
+</script>
+</body>
+</html>
