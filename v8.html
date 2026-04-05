@@ -1051,14 +1051,23 @@ function buildHoursView() {
     rangeLabel = `${MONTHS_NAMES[hrsMonth]} ${hrsYear}`;
   }
 
-  // Compute weeks proportionally from calendar days in range
+  // Count weekdays (L-V) in the date range for contract hours
   const totalDaysInRange = Math.round((endDate - startDate) / 86400000) + 1;
   const totalWeeks = totalDaysInRange / 7;
+  let weekdaysInRange = 0;
+  {
+    const d = new Date(startDate);
+    while (d <= endDate) {
+      const wd = d.getDay(); // 0=Sun, 6=Sat
+      if (wd >= 1 && wd <= 5) weekdaysInRange++;
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  // 42h efectivas / 5 días = 8.4h efectivas por día laborable
+  const HRS_CONTRATO_DIA = 42 / 5;
 
   const table = document.createElement('table');
   table.className = 'hrs-table';
-  // 42h efectivas semanales = máximo legal sin Art.22 bis
-  const HRS_CONTRATO_SEM = 42;
 
   table.innerHTML = `<thead><tr>
     <th>Nombre</th><th>\u00c1rea</th>
@@ -1082,7 +1091,8 @@ function buildHoursView() {
     const stats = computeHoursInRange(p, startDate, endDate);
     const hrsLocal = stats.hrs;
     const hrsEfectivas = stats.hrs - stats.daysLV; // descuenta 1h almuerzo por día L-V
-    const hrsContrato = totalWeeks * HRS_CONTRATO_SEM;
+    // Contrato = días L-V del calendario × 8.4h (no cuenta libres como reducción)
+    const hrsContrato = weekdaysInRange * HRS_CONTRATO_DIA;
     const diff = hrsEfectivas - hrsContrato;
     const diffColor = diff >= 0 ? '#E74C3C' : (diff > -3 ? '#D4A017' : '#3B82F6');
     const diffSign = diff >= 0 ? '+' : '';
@@ -1126,7 +1136,8 @@ function buildHoursView() {
   const summary = document.createElement('div');
   summary.className = 'sum-box';
   const avgEfectivasSem = totalWeeks > 0 ? (grandTotalEfectivas / staff.length / totalWeeks).toFixed(1) : 0;
-  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel} &middot; ${totalWeeks} semanas &middot; Contrato: ${HRS_CONTRATO_SEM}h/sem efectivas</h3>
+  const hrsContratoPersona = (weekdaysInRange * HRS_CONTRATO_DIA);
+  summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel} &middot; ${weekdaysInRange} d\u00edas L-V &middot; Contrato: ${hrsContratoPersona.toFixed(1)}h efectivas/persona</h3>
     <div class="sum-grid">
       <div class="sum-item"><div class="sv">${grandTotalContrato.toFixed(0)}</div><div class="sl">Hrs contrato equipo</div></div>
       <div class="sum-item"><div class="sv">${grandTotalEfectivas.toFixed(1)}</div><div class="sl">Hrs efectivas equipo</div></div>
