@@ -1,4 +1,4 @@
-# Lazartigue — Sistema de Horarios V7.2
+# Lazartigue — Sistema de Horarios V7.3
 
 ## Modelo General
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lazartigue &mdash; Horarios V7.2</title>
+<title>Lazartigue &mdash; Horarios V7.3</title>
 <style>
 :root{
   --black:#111;--dark:#333;--mid:#666;--light:#999;--pale:#ccc;
@@ -227,7 +227,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
 
 <div class="header">
   <div>
-    <h1>Lazartigue &mdash; Horarios V7.2</h1>
+    <h1>Lazartigue &mdash; Horarios V7.3</h1>
     <div class="sub">Proyecci&oacute;n Anual &middot; Turnos 9.5h &middot; S&aacute;bados con equipo reducido (rotaci&oacute;n individual por &aacute;rea) &middot; 46h/sem promedio</div>
   </div>
 </div>
@@ -304,14 +304,16 @@ const staff = [
   {name:'Lorena Cecilia Pacheco',area:'corte',areaLabel:'Corte / Peinado',group:2,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
   {name:'Ingrid Higuera',area:'corte',areaLabel:'Corte / Peinado',group:1,bases:[[A,A,A,B,B],[A,B,B,A,A],[A,A,B,A,B]],mondayPM:true,note:'PM rotativo, sin sábados ni libre'},
 
-  // Ayudantes: 4 personas, 1 PM por d\u00eda Ma-Vi + Lu din\u00e1mico.
-  // Sem0: Isa PM Ma, Tamara PM Mi, Ube PM Ju, Carol PM Vi
-  // Sem1: Tamara PM Ma, Ube PM Mi, Carol PM Ju, Isa PM Vi
-  // Sem2: Ube PM Ma, Carol PM Mi, Isa PM Ju, Tamara PM Vi
-  {name:'Isabel San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,B,A,A,A],[A,A,A,A,B],[A,A,A,B,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Tamara Bustos',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,A,B,A,A],[A,B,A,A,A],[A,A,A,A,B]],mondayPM:true,note:'PM rotativo'},
-  {name:'Uberlinda Urra',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,B,A],[A,A,B,A,A],[A,B,A,A,A]],mondayPM:true,note:'PM rotativo'},
-  {name:'Carol Silva',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,A,A,A,B],[A,A,A,B,A],[A,A,B,A,A]],mondayPM:true,note:'PM rotativo'},
+  // Ayudantes: 4 personas. Isabel y Carol son TITULARES, Tamara y Ube son APOYO.
+  // Jue y Vie: 2 PM (siempre 1 titular + 1 apoyo en cada turno AM/PM).
+  // Mar y Mié: 1 PM. Lun: dinámico.
+  // Sem0: Ma=Tamara PM, Mi=Carol PM, Jue=Isabel+Tamara PM, Vie=Carol+Ube PM
+  // Sem1: Ma=Ube PM, Mi=Tamara PM, Jue=Carol+Ube PM, Vie=Isabel+Tamara PM
+  // Sem2: Ma=Isabel PM, Mi=Ube PM, Jue=Isabel+Tamara PM, Vie=Carol+Ube PM
+  {name:'Isabel San Mart\u00edn',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,A,A,B,A],[A,A,A,A,B],[A,B,A,B,A]],mondayPM:true,note:'Titular, PM rotativo'},
+  {name:'Tamara Bustos',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:2,bases:[[A,B,A,B,A],[A,A,B,A,B],[A,A,A,B,A]],mondayPM:true,note:'Apoyo, PM rotativo'},
+  {name:'Uberlinda Urra',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:3,bases:[[A,A,A,A,B],[A,B,A,B,A],[A,A,B,A,B]],mondayPM:true,note:'Apoyo, PM rotativo'},
+  {name:'Carol Silva',area:'ayudantes',areaLabel:'Masajista / Ayudante',group:1,bases:[[A,A,B,A,B],[A,A,A,B,A],[A,A,A,A,B]],mondayPM:true,note:'Titular, PM rotativo'},
 
   // Lavapelo: 2 PM por d\u00eda. 4 personas rotan Ma-Vi en ciclo de 3 sem, Lu din\u00e1mico (2 PM).
   {name:'Eugenia del Carmen Uribe',area:'lavapelo',areaLabel:'Lavapelo y Secado',group:3,bases:[[A,B,B,A,A],[A,A,A,B,B],[A,B,A,B,A]],mondayPM:true,note:'PM rotativo'},
@@ -364,7 +366,11 @@ function weekCycle(date) {
 }
 
 // How many rotative PM slots does each area need per day?
-const areaPMNeeded = {coloristas:1, aplicadoras:1, ayudantes:1, corte:1, lavapelo:2, recepcion:1};
+// ayudantes PM: 1 Lun-Mié, 2 Jue-Vie (days peak)
+function getAreaPMNeeded(area, dow) {
+  if (area === 'ayudantes' && (dow === 3 || dow === 4)) return 2;
+  return {coloristas:1, aplicadoras:1, ayudantes:1, corte:1, lavapelo:2, recepcion:1}[area] || 1;
+}
 // Minimum AM (09:00) required per area on weekdays
 const areaMinAM = {coloristas:2, aplicadoras:2, ayudantes:2, corte:0, lavapelo:2, recepcion:2};
 
@@ -437,7 +443,7 @@ function dynamicPMList(area, date) {
   const fixedHasLibre = fixedPM && getLibreDay(fixedPM, lastSat) === dow;
 
   // Base needed + extra if fixed PM has libre
-  let needed = areaPMNeeded[area] || 1;
+  let needed = getAreaPMNeeded(area, dow);
   if (fixedHasLibre) needed++;
 
   // Cap PM assignments so we don't go below minimum AM for the area
@@ -455,7 +461,35 @@ function dynamicPMList(area, date) {
   const offset = (absWeek * 3 + dow) % (available.length || 1);
   const rotated = [...available.slice(offset), ...available.slice(0, offset)];
 
-  return rotated.slice(0, needed).map(p => p.name);
+  let pmList = rotated.slice(0, needed).map(p => p.name);
+
+  // Ayudantes: garantizar al menos 1 titular (Isabel/Carol) en cada turno (AM y PM).
+  // Tamara y Uberlinda nunca deben estar solas sin titular.
+  if (area === 'ayudantes') {
+    const titulares = ['Isabel San Mart\u00edn', 'Carol Silva'];
+    const apoyo = ['Tamara Bustos', 'Uberlinda Urra'];
+    const pmHasTitular = pmList.some(n => titulares.includes(n));
+    const amNames = available.filter(p => !pmList.includes(p.name)).map(p => p.name);
+    const amHasTitular = amNames.some(n => titulares.includes(n));
+    // If PM has no titular but AM has one, swap an apoyo PM for a titular AM
+    if (!pmHasTitular && amHasTitular) {
+      const apoyoInPM = pmList.find(n => apoyo.includes(n));
+      const titularInAM = amNames.find(n => titulares.includes(n));
+      if (apoyoInPM && titularInAM) {
+        pmList = pmList.map(n => n === apoyoInPM ? titularInAM : n);
+      }
+    }
+    // If AM has no titular but PM has both, move one titular to AM
+    if (pmHasTitular && !amHasTitular && pmList.filter(n => titulares.includes(n)).length > 1) {
+      const titularInPM = pmList.find(n => titulares.includes(n));
+      const apoyoInAM = amNames.find(n => apoyo.includes(n));
+      if (titularInPM && apoyoInAM) {
+        pmList = pmList.map(n => n === titularInPM ? apoyoInAM : n);
+      }
+    }
+  }
+
+  return pmList;
 }
 
 function getShiftForDate(person, date) {
@@ -765,6 +799,15 @@ function buildDayView() {
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
     const ayPresent = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresent.length>=2?'ok':'warn'}">${ayPresent.length}</span></div>`;
+    const ayPM = byArea['ayudantes'].people.filter(p => p.shift.dc === 'pm');
+    const ayPMMin = (dow === 3 || dow === 4) ? 2 : 1;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes PM${(dow===3||dow===4)?' (peak: m\u00edn 2)':''}</div><span class="dm-cov-count ${ayPM.length>=ayPMMin?'ok':'warn'}">${ayPM.length}</span></div>`;
+    // Titular check: at least 1 titular in AM and 1 in PM
+    const titNames = ['Isabel San Mart\u00edn', 'Carol Silva'];
+    const ayAMTit = ayAM.filter(p => titNames.includes(p.name)).length;
+    const ayPMTit = ayPM.filter(p => titNames.includes(p.name)).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante AM</div><span class="dm-cov-count ${ayAMTit>=1?'ok':'warn'}">${ayAMTit}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante PM</div><span class="dm-cov-count ${ayPMTit>=1?'ok':'warn'}">${ayPMTit}</span></div>`;
     const lavPresent = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresent.length>=2?'ok':'warn'}">${lavPresent.length}</span></div>`;
     const recAM = byArea['recepcion'].people.filter(p => p.shift.dc === 'am');
@@ -1255,8 +1298,9 @@ buildTeamView();
     {t:'Min. 2 coloristas apertura y cierre',d:'Siempre 2 AM + 2 PM. Daniel Olave PM fijo. Marcela, Mar\u00eda Paz y Paola rotan el segundo PM.',ok:true},
     {t:'1 aplicador / 2 coloristas',d:'3 aplicadoras para 4 coloristas. Patricia, Cecilia y Karen rotan PM. Siempre \u2265 1:2.',ok:true},
     {t:'Recepci\u00f3n: 3 en apertura',d:'Antonio AM fijo + Francisca, Valeria y Raquel rotan 1 PM/d\u00eda (siempre 2 AM). Total apertura: 3.',ok:true},
-    {t:'Peak Jueves y Viernes',d:'M\u00e1xima dotaci\u00f3n en ma\u00f1ana de peak. 3 coloristas + 2 aplicadoras + 2 ayudantes en apertura.',ok:true},
-    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM + 1 corte PM + 1 ayudante PM + 2 lavapelo PM. Nadie cierra todos los d\u00edas.',ok:true},
+    {t:'Peak Jueves y Viernes',d:'M\u00e1xima dotaci\u00f3n en ma\u00f1ana de peak. 3 coloristas + 2 aplicadoras + 2 ayudantes en apertura. 2 ayudantes PM en Jue/Vie.',ok:true},
+    {t:'Cierre cubierto con alternancia',d:'Siempre 2 coloristas PM (Daniel fijo + 1 rotativo) + 1 aplicadora PM + 1 corte PM + 2 lavapelo PM. Ayudantes: 1 PM (Lun-Mi\u00e9), 2 PM (Jue-Vie). Nadie cierra todos los d\u00edas.',ok:true},
+    {t:'Ayudantes: titulares y apoyo',d:'Isabel San Mart\u00edn y Carol Silva son titulares. Tamara Bustos y Uberlinda Urra son apoyo. En cada turno (AM y PM) siempre hay al menos 1 titular presente.',ok:true},
     {t:'Rotaci\u00f3n s\u00e1bados por \u00e1rea',d:'Coloristas: Marcela, M\u00aa Paz, Paola, Daniel (c/4 sem). Aplicadoras: Patricia, Cecilia, Karen (c/3). Ayudantes: Isabel, Tamara, Ube, Carol (c/4). Lavapelo: Eugenia, Carolina, Alma, Francis (c/4). Recepci\u00f3n: Francisca, Valeria, Raquel (c/3).',ok:true},
   ];
 
@@ -1363,6 +1407,14 @@ function openDayDetail(date) {
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes apertura</div><span class="dm-cov-count ${ayAM.length>=colAM.length?'ok':'warn'}">${ayAM.length}</span></div>`;
     const ayPresentM = byArea['ayudantes'].people.filter(p => p.shift.h > 0);
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes presentes (m\u00edn 2)</div><span class="dm-cov-count ${ayPresentM.length>=2?'ok':'warn'}">${ayPresentM.length}</span></div>`;
+    const ayPMm = byArea['ayudantes'].people.filter(p => p.shift.dc === 'pm');
+    const ayPMMinM = (dow === 3 || dow === 4) ? 2 : 1;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Ayudantes PM${(dow===3||dow===4)?' (peak: m\u00edn 2)':''}</div><span class="dm-cov-count ${ayPMm.length>=ayPMMinM?'ok':'warn'}">${ayPMm.length}</span></div>`;
+    const titNamesM = ['Isabel San Mart\u00edn', 'Carol Silva'];
+    const ayAMTitM = ayAM.filter(p => titNamesM.includes(p.name)).length;
+    const ayPMTitM = ayPMm.filter(p => titNamesM.includes(p.name)).length;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante AM</div><span class="dm-cov-count ${ayAMTitM>=1?'ok':'warn'}">${ayAMTitM}</span></div>`;
+    html += `<div class="dm-cov-row"><div class="dm-cov-franja">Titular ayudante PM</div><span class="dm-cov-count ${ayPMTitM>=1?'ok':'warn'}">${ayPMTitM}</span></div>`;
     const lavPresentM = byArea['lavapelo'].people.filter(p => p.shift.h > 0);
     html += `<div class="dm-cov-row"><div class="dm-cov-franja">Lavapelo presentes (m\u00edn 2)</div><span class="dm-cov-count ${lavPresentM.length>=2?'ok':'warn'}">${lavPresentM.length}</span></div>`;
 
