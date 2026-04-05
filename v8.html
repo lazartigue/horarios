@@ -682,7 +682,7 @@ function buildDayView() {
   html += `<div class="dm-stat"><div class="ds-v">${isSab ? totalSab + totalAM : totalAM}</div><div class="ds-l">${isSab ? 'Presentes' : 'Turno AM'}</div></div>`;
   if (!isSab) html += `<div class="dm-stat"><div class="ds-v">${totalPM}</div><div class="ds-l">Turno PM</div></div>`;
   html += `<div class="dm-stat"><div class="ds-v">${totalLibre}</div><div class="ds-l">Libres</div></div>`;
-  html += `<div class="dm-stat"><div class="ds-v">${totalHrs}h</div><div class="ds-l">Hrs totales</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalHrs.toFixed(1)}h</div><div class="ds-l">Hrs totales</div></div>`;
   html += '</div>';
 
   // Coverage
@@ -835,7 +835,7 @@ function buildWeekView() {
     <div class="dm-stat"><div class="ds-v">${wTotalAM}</div><div class="ds-l">Turnos AM</div></div>
     <div class="dm-stat"><div class="ds-v">${wTotalPM}</div><div class="ds-l">Turnos PM</div></div>
     <div class="dm-stat"><div class="ds-v">${wTotalLibre}</div><div class="ds-l">Libres</div></div>
-    <div class="dm-stat"><div class="ds-v">${wTotalHrs}h</div><div class="ds-l">Hrs totales</div></div>
+    <div class="dm-stat"><div class="ds-v">${wTotalHrs.toFixed(1)}h</div><div class="ds-l">Hrs totales</div></div>
     <div class="dm-stat"><div class="ds-v">${satCount}</div><div class="ds-l">S\u00e1b ${satDate.getDate()}/${satDate.getMonth()+1}</div></div>
   </div>`;
 
@@ -992,11 +992,11 @@ function buildPersonView() {
       <div class="pcard-b">
         ${weeksHtml}
         <div class="pstats">
-          <div class="stat"><span class="stat-v">${monthHrs}</span><span class="stat-l">Hrs mes</span></div>
+          <div class="stat"><span class="stat-v">${monthHrs.toFixed(1)}</span><span class="stat-l">Hrs mes</span></div>
           <div class="stat"><span class="stat-v">${monthDays}</span><span class="stat-l">D\u00edas</span></div>
           <div class="stat"><span class="stat-v">${monthSats}</span><span class="stat-l">S\u00e1bados</span></div>
           <div class="stat"><span class="stat-v">${monthLibre}</span><span class="stat-l">Libres</span></div>
-          <div class="stat"><span class="stat-v">${monthDays > 0 ? (monthHrs/Math.ceil(monthDays/6)).toFixed(0) : 0}</span><span class="stat-l">Hrs/sem</span></div>
+          <div class="stat"><span class="stat-v">${monthDays > 0 ? (monthHrs/Math.ceil(monthDays/6)).toFixed(1) : 0}</span><span class="stat-l">Hrs/sem</span></div>
           <div class="stat"><span class="stat-v">${p.note||''}</span><span class="stat-l">Horario</span></div>
         </div>
       </div>`;
@@ -1082,7 +1082,7 @@ function buildHoursView() {
       <td style="font-weight:600">${p.name}</td>
       <td style="font-size:11px;color:var(--mid)">${p.areaLabel}</td>
       <td style="font-size:10px;color:var(--mid)">${p.note||''}</td>
-      <td style="font-weight:700">${stats.hrs}h</td>
+      <td style="font-weight:700">${stats.hrs.toFixed(1)}h</td>
       <td>${stats.days}</td>
       <td>${stats.sats}</td>
       <td>${stats.libres}</td>
@@ -1093,7 +1093,7 @@ function buildHoursView() {
 
   // Total row
   const totalRow = document.createElement('tr');
-  totalRow.innerHTML = `<td colspan="3" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td><td style="font-weight:700">${grandTotal}h</td><td colspan="5"></td>`;
+  totalRow.innerHTML = `<td colspan="3" style="font-weight:700;text-align:right;padding-right:16px">TOTAL EQUIPO</td><td style="font-weight:700">${grandTotal.toFixed(1)}h</td><td colspan="5"></td>`;
   totalRow.style.borderTop = '2px solid var(--black)';
   tbody.appendChild(totalRow);
 
@@ -1104,9 +1104,9 @@ function buildHoursView() {
   summary.className = 'sum-box';
   summary.innerHTML = `<h3><svg class="icon icon-sm"><use href="#i-bar-chart"/></svg> ${rangeLabel}</h3>
     <div class="sum-grid">
-      <div class="sum-item"><div class="sv">${grandTotal}</div><div class="sl">Hrs equipo</div></div>
+      <div class="sum-item"><div class="sv">${grandTotal.toFixed(1)}</div><div class="sl">Hrs equipo</div></div>
       <div class="sum-item"><div class="sv">${staff.length}</div><div class="sl">Personas</div></div>
-      <div class="sum-item"><div class="sv">${(grandTotal / staff.length).toFixed(0)}</div><div class="sl">Hrs/persona</div></div>
+      <div class="sum-item"><div class="sv">${(grandTotal / staff.length).toFixed(1)}</div><div class="sl">Hrs/persona</div></div>
       <div class="sum-item"><div class="sv">${totalWeeks > 0 ? (grandTotal / staff.length / totalWeeks).toFixed(1) : 0}</div><div class="sl">Hrs/sem prom</div></div>
     </div>`;
   container.appendChild(summary);
@@ -1285,7 +1285,7 @@ function openDayDetail(date) {
   html += `<div class="dm-stat"><div class="ds-v">${isSab ? totalSab + totalAM : totalAM}</div><div class="ds-l">${isSab ? 'Presentes' : 'Turno AM'}</div></div>`;
   if (!isSab) html += `<div class="dm-stat"><div class="ds-v">${totalPM}</div><div class="ds-l">Turno PM</div></div>`;
   html += `<div class="dm-stat"><div class="ds-v">${totalLibre}</div><div class="ds-l">Libres</div></div>`;
-  html += `<div class="dm-stat"><div class="ds-v">${totalHrs}h</div><div class="ds-l">Hrs totales</div></div>`;
+  html += `<div class="dm-stat"><div class="ds-v">${totalHrs.toFixed(1)}h</div><div class="ds-l">Hrs totales</div></div>`;
   html += '</div>';
 
   // Coverage
