@@ -1117,8 +1117,8 @@ function buildHoursView() {
       const color = over ? '#E74C3C' : (wk.efectivas > 41 ? '#D4A017' : 'inherit');
       const bold = over ? 'font-weight:700;' : '';
       let detail = `${wk.efectivas.toFixed(1)}`;
-      if (wk.sab) detail += ` \u2606`;
-      if (wk.libre) detail += ` \u2022L`;
+      if (wk.sab) detail += ` S\u00e1b`;
+      if (wk.libre) detail += ` Lib`;
       weekCells += `<td style="${bold}color:${color};font-size:11px" title="Local: ${wk.local.toFixed(1)}h | L-V: ${wk.daysLV}d | S\u00e1b: ${wk.sab} | Libre: ${wk.libre}">${detail}</td>`;
     });
 
@@ -1146,7 +1146,7 @@ function buildHoursView() {
     </div>
     <div style="margin-top:8px;font-size:10px;color:var(--mid)">
       Hrs efectivas = horas en local \u2212 1h almuerzo por d\u00eda L-V. S\u00e1bado sin descuento.
-      &nbsp;\u2606 = trabaja s\u00e1bado &nbsp;\u2022L = tiene libre.
+      S\u00e1b = trabaja s\u00e1bado. Lib = tiene libre.
       <span style="color:#E74C3C">\u25a0</span> Rojo = supera 42h.
       <span style="color:#D4A017">\u25a0</span> Amarillo = entre 41-42h.
     </div>`;
