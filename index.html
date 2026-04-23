@@ -8,7 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fafafa;color:#111;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
 
-.container{max-width:960px;width:100%;text-align:center}
+.container{max-width:1200px;width:100%;text-align:center}
 
 .logo{font-size:28px;font-weight:700;letter-spacing:-.5px;color:#111;margin-bottom:6px}
 .subtitle{font-size:13px;color:#666;margin-bottom:40px}
@@ -52,7 +52,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
   <div class="logo">Lazartigue</div>
   <div class="subtitle">Selecciona la versi&oacute;n de horarios que deseas consultar</div>
 
-  <div class="cards" style="grid-template-columns:1fr 1fr 1fr">
+  <div class="cards" style="grid-template-columns:1fr 1fr 1fr 1fr">
     <a href="v7.html" class="card">
       <span class="card-badge badge-current">Anterior</span>
       <span class="card-version">V7.3</span>
@@ -96,7 +96,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
       <span class="card-arrow">Abrir &rarr;</span>
     </a>
     <a href="v9.html" class="card">
-      <span class="card-badge badge-new">Nueva</span>
+      <span class="card-badge badge-current">Anterior</span>
       <span class="card-version">V9.0</span>
       <span class="card-label">Turnos rotativos semanales</span>
       <div class="card-rules">
@@ -114,6 +114,29 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
         <ul>
           <li><span class="icon-rule">&cir;</span> Solapamiento 10:00–18:00 (todo el equipo)</li>
           <li><span class="icon-rule">&cir;</span> Recepci&oacute;n con horarios fijos individuales</li>
+        </ul>
+      </div>
+      <span class="card-arrow">Abrir &rarr;</span>
+    </a>
+    <a href="v9.1.html" class="card">
+      <span class="card-badge badge-new">Nueva</span>
+      <span class="card-version">V9.1</span>
+      <span class="card-label">Lunes turnos + Mar-Vie completa</span>
+      <div class="card-rules">
+        <div class="card-section">Turnos</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> Lun AM 09-16 / PM 12-19 (7h)</li>
+          <li><span class="icon-rule">&bull;</span> Mar-Vie <strong>09:00–19:00</strong> (10h)</li>
+        </ul>
+        <div class="card-section">Jornada</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> <strong>47h/sem</strong> &mdash; Sin s&aacute;bados</li>
+          <li><span class="icon-rule">&bull;</span> Rotaci&oacute;n A/B solo lunes</li>
+        </ul>
+        <div class="card-section">Novedades</div>
+        <ul>
+          <li><span class="icon-rule">&cir;</span> Mar-Vie todo el equipo junto</li>
+          <li><span class="icon-rule">&cir;</span> Recepci&oacute;n con horarios fijos</li>
         </ul>
       </div>
       <span class="card-arrow">Abrir &rarr;</span>
