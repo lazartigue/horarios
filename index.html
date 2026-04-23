@@ -8,7 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fafafa;color:#111;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
 
-.container{max-width:680px;width:100%;text-align:center}
+.container{max-width:960px;width:100%;text-align:center}
 
 .logo{font-size:28px;font-weight:700;letter-spacing:-.5px;color:#111;margin-bottom:6px}
 .subtitle{font-size:13px;color:#666;margin-bottom:40px}
@@ -38,8 +38,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
 
 .footer{font-size:11px;color:#999}
 
-@media(max-width:500px){
-  .cards{grid-template-columns:1fr}
+@media(max-width:800px){
+  .cards{grid-template-columns:1fr!important}
   .logo{font-size:22px}
   .card{padding:24px 18px}
   .card-version{font-size:26px}
@@ -52,9 +52,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
   <div class="logo">Lazartigue</div>
   <div class="subtitle">Selecciona la versi&oacute;n de horarios que deseas consultar</div>
 
-  <div class="cards">
+  <div class="cards" style="grid-template-columns:1fr 1fr 1fr">
     <a href="v7.html" class="card">
-      <span class="card-badge badge-current">Actual</span>
+      <span class="card-badge badge-current">Anterior</span>
       <span class="card-version">V7.3</span>
       <span class="card-label">Horarios vigentes</span>
       <div class="card-rules">
@@ -67,19 +67,17 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
         <ul>
           <li><span class="icon-rule">&bull;</span> D&iacute;a libre la semana <strong>siguiente</strong> al s&aacute;bado</li>
         </ul>
-        <div class="card-section">En com&uacute;n con V8</div>
+        <div class="card-section">S&aacute;bados</div>
         <ul>
-          <li><span class="icon-rule">&cir;</span> S&aacute;bados rotaci&oacute;n individual por &aacute;rea</li>
-          <li><span class="icon-rule">&cir;</span> Daniel y Pamela PM fijo / Antonio AM fijo</li>
-          <li><span class="icon-rule">&cir;</span> Ayudantes: titular siempre presente en PM</li>
+          <li><span class="icon-rule">&cir;</span> Rotaci&oacute;n individual por &aacute;rea</li>
         </ul>
       </div>
       <span class="card-arrow">Abrir &rarr;</span>
     </a>
     <a href="v8.html" class="card">
-      <span class="card-badge badge-new">Nueva</span>
+      <span class="card-badge badge-current">Anterior</span>
       <span class="card-version">V8.0</span>
-      <span class="card-label">Propuesta nueva</span>
+      <span class="card-label">Horario fijo por persona</span>
       <div class="card-rules">
         <div class="card-section">Turnos</div>
         <ul>
@@ -88,14 +86,34 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
         </ul>
         <div class="card-section">Libre</div>
         <ul>
-          <li><span class="icon-rule">&bull;</span> D&iacute;a libre la <strong>misma</strong> semana del s&aacute;bado</li>
-          <li><span class="icon-rule">&bull;</span> Cumple 42h sin Art. 22 bis</li>
+          <li><span class="icon-rule">&bull;</span> Libre misma semana del s&aacute;bado</li>
         </ul>
-        <div class="card-section">En com&uacute;n con V7.3</div>
+        <div class="card-section">S&aacute;bados</div>
         <ul>
-          <li><span class="icon-rule">&cir;</span> S&aacute;bados rotaci&oacute;n individual por &aacute;rea</li>
-          <li><span class="icon-rule">&cir;</span> Daniel y Pamela PM fijo / Antonio AM fijo</li>
-          <li><span class="icon-rule">&cir;</span> Ayudantes: titular siempre presente en PM</li>
+          <li><span class="icon-rule">&cir;</span> Rotaci&oacute;n individual por &aacute;rea</li>
+        </ul>
+      </div>
+      <span class="card-arrow">Abrir &rarr;</span>
+    </a>
+    <a href="v9.html" class="card">
+      <span class="card-badge badge-new">Nueva</span>
+      <span class="card-version">V9.0</span>
+      <span class="card-label">Turnos rotativos semanales</span>
+      <div class="card-rules">
+        <div class="card-section">Turnos</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> AM 09:00–16:00 / PM 12:00–19:00 (7h)</li>
+          <li><span class="icon-rule">&bull;</span> Rotaci&oacute;n <strong>semanal</strong> Grupo A/B</li>
+        </ul>
+        <div class="card-section">Jornada</div>
+        <ul>
+          <li><span class="icon-rule">&bull;</span> <strong>Sin s&aacute;bados</strong> &mdash; Lun-Vie</li>
+          <li><span class="icon-rule">&bull;</span> Cierre 19:00 &mdash; 35h/sem rotativo</li>
+        </ul>
+        <div class="card-section">Novedades</div>
+        <ul>
+          <li><span class="icon-rule">&cir;</span> Solapamiento 12:00–16:00 (todo el equipo)</li>
+          <li><span class="icon-rule">&cir;</span> Recepci&oacute;n con horarios fijos individuales</li>
         </ul>
       </div>
       <span class="card-arrow">Abrir &rarr;</span>
