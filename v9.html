@@ -224,7 +224,7 @@ select:focus{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
 <div class="header">
   <div>
     <h1>Lazartigue &mdash; Horarios V9.0</h1>
-    <div class="sub">Proyecci&oacute;n Anual &middot; Lun-Vie &middot; Cierre 19:00 &middot; AM 09:00–16:00 / PM 12:00–19:00 &middot; Rotaci&oacute;n semanal Grupo A/B &middot; Sin s&aacute;bados</div>
+    <div class="sub">Proyecci&oacute;n Anual &middot; Lun-Vie &middot; Cierre 19:00 &middot; AM 09:00–18:00 / PM 10:00–19:00 &middot; Rotaci&oacute;n semanal Grupo A/B &middot; Sin s&aacute;bados</div>
   </div>
   <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-weight:600;color:var(--dark);background:#fff;text-decoration:none;transition:.15s" onmouseover="this.style.background='var(--bg)';this.style.borderColor='var(--dark)'" onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)'">&larr; Selector de versiones</a>
 </div>
@@ -271,8 +271,8 @@ const PEAK_DOW = [3,4];
 // ============================================================
 // SHIFTS
 // ============================================================
-const AM  = {time:'09:00-16:00', label:'AM', cls:'turno-a', dc:'am', h:7};
-const PM  = {time:'12:00-19:00', label:'PM', cls:'turno-b', dc:'pm', h:7};
+const AM  = {time:'09:00-18:00', label:'AM', cls:'turno-a', dc:'am', h:9};
+const PM  = {time:'10:00-19:00', label:'PM', cls:'turno-b', dc:'pm', h:9};
 const DOM = {time:'DOMINGO', label:'Dom', cls:'turno-libre', dc:'dom', h:0};
 
 // Turnos especiales recepci\u00f3n (horarios fijos individuales)
@@ -284,7 +284,7 @@ const P_LV  = {time:'09:00-19:00', label:'9-19', cls:'turno-a', dc:'am', h:10};
 const P_MXJ = {time:'10:00-19:00', label:'10-19', cls:'turno-b', dc:'pm', h:9};
 const FULL  = {time:'09:00-19:00', label:'9-19', cls:'turno-a', dc:'am', h:10};
 
-const LEGEND_HTML = `<div class="badges" style="margin:8px 0 4px"><span class="badge"><span class="dot" style="background:var(--am)"></span> AM 09:00 \u2013 16:00</span><span class="badge"><span class="dot" style="background:var(--pm)"></span> PM 12:00 \u2013 19:00</span></div>`;
+const LEGEND_HTML = `<div class="badges" style="margin:8px 0 4px"><span class="badge"><span class="dot" style="background:var(--am)"></span> AM 09:00 \u2013 18:00</span><span class="badge"><span class="dot" style="background:var(--pm)"></span> PM 10:00 \u2013 19:00</span></div>`;
 
 // ============================================================
 // STAFF — Grupos rotativos A/B + Recepci\u00f3n fija
@@ -695,8 +695,8 @@ function buildCoverageHTML(byArea, totalPresent) {
   html += `<div class="dm-cov-row"><div class="dm-cov-franja">Corte AM (\u2265 1)</div><span class="dm-cov-count ${corteAM.length>=1?'ok':'warn'}">${corteAM.length}</span></div>`;
   html += `<div class="dm-cov-row"><div class="dm-cov-franja">Corte PM (\u2265 1)</div><span class="dm-cov-count ${cortePM.length>=1?'ok':'warn'}">${cortePM.length}</span></div>`;
 
-  // Solapamiento 12:00-16:00
-  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Solapamiento 12:00\u201316:00 (todos)</div><span class="dm-cov-count ok">${totalPresent}</span></div>`;
+  // Solapamiento 10:00-18:00
+  html += `<div class="dm-cov-row"><div class="dm-cov-franja">Solapamiento 10:00\u201318:00 (todos)</div><span class="dm-cov-count ok">${totalPresent}</span></div>`;
 
   html += '</div>';
   return html;
@@ -1133,11 +1133,11 @@ buildTeamView();
 (function buildRulesView() {
   const container = document.getElementById('view-rules');
   container.innerHTML = `<h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px"><svg class="icon"><use href="#i-shield"/></svg> Restricciones y Reglas V9 &mdash; Turnos Rotativos Semanales</h2>
-    <p style="font-size:11px;color:var(--mid);margin-bottom:16px">Personal operativo rota semanalmente entre AM (09:00-16:00) y PM (12:00-19:00) en Grupos A/B. Recepci\u00f3n tiene horarios fijos individuales. Sin s\u00e1bados.</p>
+    <p style="font-size:11px;color:var(--mid);margin-bottom:16px">Personal operativo rota semanalmente entre AM (09:00-18:00) y PM (10:00-19:00) en Grupos A/B. Recepci\u00f3n tiene horarios fijos individuales. Sin s\u00e1bados.</p>
     <div class="sum-box"><h3><svg class="icon icon-sm"><use href="#i-info"/></svg> Resumen del Modelo</h3><div class="sum-grid">
-      <div class="sum-item"><div class="sv">7h</div><div class="sl">AM 09:00-16:00</div></div>
-      <div class="sum-item"><div class="sv">7h</div><div class="sl">PM 12:00-19:00</div></div>
-      <div class="sum-item"><div class="sv">35h</div><div class="sl">Sem rotativo</div></div>
+      <div class="sum-item"><div class="sv">9h</div><div class="sl">AM 09:00-18:00</div></div>
+      <div class="sum-item"><div class="sv">9h</div><div class="sl">PM 10:00-19:00</div></div>
+      <div class="sum-item"><div class="sv">45h</div><div class="sl">Sem rotativo</div></div>
       <div class="sum-item"><div class="sv">Lun-Vie</div><div class="sl">Sin s\u00e1bados</div></div>
       <div class="sum-item"><div class="sv">A/B</div><div class="sl">Rotaci\u00f3n semanal</div></div>
       <div class="sum-item"><div class="sv">${staff.length}</div><div class="sl">Personal activo</div></div>
@@ -1145,15 +1145,15 @@ buildTeamView();
 
   const rules = [
     {t:'Rotaci\u00f3n semanal AM/PM',d:'Personal operativo se divide en Grupo A y Grupo B. Cada semana los grupos alternan: semana par Grupo A=AM y Grupo B=PM; semana impar se invierte. Referencia: lunes 7 de abril 2025.',ok:true},
-    {t:'Jornada 7h sin almuerzo',d:'Turnos de 7 horas (09:00-16:00 o 12:00-19:00). Al ser jornada menor a 8h, no se descuenta hora de almuerzo. 5 d\u00edas \u00d7 7h = 35h efectivas/semana.',ok:true},
+    {t:'Jornada 9h con almuerzo',d:'Turnos de 9 horas (09:00-18:00 o 10:00-19:00). Se descuenta 1h de almuerzo por d\u00eda. 5 d\u00edas \u00d7 9h = 45h en local, 40h efectivas/semana.',ok:true},
     {t:'Sin s\u00e1bados',d:'El sal\u00f3n no abre s\u00e1bados ni domingos. Jornada exclusivamente de lunes a viernes. Cierre a las 19:00.',ok:true},
-    {t:'Solapamiento 12:00-16:00',d:'Entre 12:00 y 16:00 ambos turnos coinciden. En esta franja todo el personal operativo est\u00e1 presente simult\u00e1neamente (4 horas de solapamiento).',ok:true},
+    {t:'Solapamiento 10:00-18:00',d:'Entre 10:00 y 18:00 ambos turnos coinciden. En esta franja todo el personal operativo est\u00e1 presente simult\u00e1neamente (8 horas de solapamiento).',ok:true},
     {t:'Restricci\u00f3n Toledo/Pacheco',d:'Patricia Toledo (aplicadoras, Grupo A) y Lorena Cecilia Pacheco (corte, Grupo B) est\u00e1n en grupos distintos. Siempre hay cobertura de corte y aplicaci\u00f3n en ambos turnos.',ok:true},
     {t:'Restricci\u00f3n Isabel/Carol',d:'Isabel San Mart\u00edn (Grupo A) y Carol Silva (Grupo B) est\u00e1n en grupos distintos. Siempre hay una masajista titular en cada turno.',ok:true},
     {t:'2 coloristas por turno',d:'Cada grupo tiene 2 coloristas: Grupo A = Marcela + Daniel; Grupo B = M\u00aa Paz + Paola. Siempre hay 2 coloristas en AM y 2 en PM.',ok:true},
     {t:'Recepci\u00f3n: horario fijo',d:'Raquel (9-18 L-X, 9-19 J-V), Valeria (10-19 L-X, 9-19 J-V), Pamela (9-19 L,V / 10-19 M-J), Antonio y Francisca (9-19 L-V). Horarios fijos, no rotan.',ok:true},
     {t:'Recepci\u00f3n: cobertura completa',d:'Antonio y Francisca cubren la jornada completa 09:00-19:00. Raquel abre siempre a las 9:00. Valeria cubre hasta cierre. Pamela alterna apertura y cierre.',ok:true},
-    {t:'L\u00edmite 45h efectivas/semana',d:'Nuevo tope semanal de 45h. Personal rotativo: 35h (sin descuento). Recepci\u00f3n: var\u00eda por persona, con descuento de 1h almuerzo en jornadas \u2265 8h.',ok:true},
+    {t:'L\u00edmite 45h/semana en local',d:'Tope semanal de 45h en local. Personal rotativo: 9h \u00d7 5 = 45h. Recepci\u00f3n: var\u00eda por persona. Se descuenta 1h almuerzo por d\u00eda en jornadas \u2265 8h.',ok:true},
   ];
 
   const grid = document.createElement('div');
